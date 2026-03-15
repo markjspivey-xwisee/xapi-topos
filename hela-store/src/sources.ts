@@ -290,10 +290,12 @@ export class xAPISource implements FederatedSource {
 export interface BadgeSourceConfig {
   id: string;
   label: string;
-  endpoint: string;       // e.g. https://api.credly.com/v1
-  auth: { type: "bearer"; token: string } | { type: "basic"; username: string; password: string };
+  endpoint: string;       // e.g. https://www.credly.com/users/username/badges.json
+  auth: { type: "bearer"; token: string } | { type: "basic"; username: string; password: string } | { type: "none" };
   /** Map badge earner email to xAPI actor */
   actorEmail?: string;
+  /** Credly public profile mode — endpoint is the profile badges.json URL */
+  credlyProfile?: boolean;
 }
 
 export class BadgeSource implements FederatedSource {
@@ -341,11 +343,10 @@ export class BadgeSource implements FederatedSource {
   async query(params: StatementQueryParams): Promise<FederatedQueryResult> {
     const start = Date.now();
     try {
-      // Build badge API URL — Credly-style: /organizations/{org}/badges or /users/{id}/badges
-      let url = `${this._config.endpoint}/badges`;
-      if (this._config.actorEmail) {
-        url += `?filter=recipient_email::${this._config.actorEmail}`;
-      }
+      // Credly public profile mode: endpoint IS the badges.json URL
+      const url = this._config.credlyProfile
+        ? this._config.endpoint
+        : `${this._config.endpoint}/badges`;
 
       const res = await fetch(url, { headers: this._headers() });
       if (!res.ok) {
@@ -356,27 +357,37 @@ export class BadgeSource implements FederatedSource {
       const badges: any[] = body.data || body.badges || body || [];
 
       // Map badge assertions to xAPI statements (synthetic realization)
-      const statements: StoredXAPIStatement[] = badges.map((badge: any) => ({
-        id: badge.id || crypto.randomUUID(),
-        actor: {
-          mbox: this._config.actorEmail ? `mailto:${this._config.actorEmail}` : "mailto:unknown@example.com",
-          name: badge.recipient_name || badge.earner?.name || "Learner",
-        },
-        verb: { id: IRI("http://adlnet.gov/expapi/verbs/earned"), display: { "en-US": "earned" } },
-        object: {
-          objectType: "Activity" as const,
-          id: IRI(badge.badge_template?.url || badge.badge_url || `urn:badge:${badge.id}`),
-          definition: {
-            name: { "en-US": badge.badge_template?.name || badge.name || "Badge" },
-            description: { "en-US": badge.badge_template?.description || badge.description || "" },
-            type: IRI("https://w3id.org/xapi/openbadges/activity-type/badge"),
+      const statements: StoredXAPIStatement[] = badges.map((badge: any) => {
+        // Support Credly's nested structure
+        const template = badge.badge_template || {};
+        const earnerName = badge.issued_to || badge.earner?.name || badge.recipient_name || "Learner";
+        const badgeName = template.name || badge.name || "Badge";
+        const badgeDesc = template.description || badge.description || "";
+        const badgeUrl = template.global_activity_url || template.url || badge.badge_url || `urn:badge:${badge.id}`;
+        const issuerName = badge.issuer?.entities?.[0]?.entity?.name || badge.issuer?.summary || "Unknown Issuer";
+
+        return {
+          id: badge.id || crypto.randomUUID(),
+          actor: {
+            mbox: this._config.actorEmail ? `mailto:${this._config.actorEmail}` : "mailto:unknown@example.com",
+            name: earnerName,
           },
-        },
-        result: { completion: true, success: true, score: { scaled: 1.0 } },
-        timestamp: badge.issued_at || badge.issuedOn || new Date().toISOString(),
-        stored: new Date().toISOString(),
-        version: "2.0.0",
-      }));
+          verb: { id: IRI("http://adlnet.gov/expapi/verbs/earned"), display: { "en-US": "earned" } },
+          object: {
+            objectType: "Activity" as const,
+            id: IRI(badgeUrl),
+            definition: {
+              name: { "en-US": badgeName },
+              description: { "en-US": `${badgeDesc} [Issued by ${issuerName}]` },
+              type: IRI("https://w3id.org/xapi/openbadges/activity-type/badge"),
+            },
+          },
+          result: { completion: true, success: true, score: { scaled: 1.0 } },
+          timestamp: badge.issued_at || badge.issuedOn || new Date().toISOString(),
+          stored: new Date().toISOString(),
+          version: "2.0.0",
+        };
+      });
 
       const psis = statements.map(s => realize(s, `source:${this.id}`));
       this.metadata.lastQueried = new Date().toISOString();
@@ -393,10 +404,11 @@ export class BadgeSource implements FederatedSource {
     const h: Record<string, string> = { "Accept": "application/json" };
     if (this._config.auth.type === "bearer") {
       h["Authorization"] = `Bearer ${this._config.auth.token}`;
-    } else {
+    } else if (this._config.auth.type === "basic") {
       const cred = Buffer.from(`${this._config.auth.username}:${this._config.auth.password}`).toString("base64");
       h["Authorization"] = `Basic ${cred}`;
     }
+    // type "none" — no auth header (public endpoints)
     return h;
   }
 }

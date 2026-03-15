@@ -885,12 +885,49 @@ export function createServer(store: HELAStore, options: CreateServerOptions = {}
   // ── Source registration (badge + ctdl) ──────────────────────────────────
 
   app.post("/hela/sources/register/badge", async (req, res) => {
-    const { id, label, endpoint, auth, actorEmail } = req.body;
-    if (!id || !endpoint || !auth) return res.status(400).json({ error: "id, endpoint, auth required" });
-    const source = new BadgeSource({ id, label: label || id, endpoint, auth, actorEmail });
+    const { id, label, endpoint, auth, actorEmail, credlyProfile } = req.body;
+    if (!id || !endpoint) return res.status(400).json({ error: "id, endpoint required" });
+    const source = new BadgeSource({
+      id,
+      label: label || id,
+      endpoint,
+      auth: auth || { type: "none" as const },
+      actorEmail,
+      credlyProfile: credlyProfile ?? false,
+    });
     const test = await source.testConnection();
     store.registerSource(source);
     return res.json({ registered: true, id, status: test.ok ? "connected" : "disconnected", error: test.error });
+  });
+
+  // Credly shortcut — just provide username
+  app.post("/hela/sources/register/credly", async (req, res) => {
+    const { username, actorEmail } = req.body;
+    if (!username) return res.status(400).json({ error: "username required (Credly profile username)" });
+    const source = new BadgeSource({
+      id: `credly-${username}`,
+      label: `Credly (${username})`,
+      endpoint: `https://www.credly.com/users/${username}/badges.json`,
+      auth: { type: "none" as const },
+      actorEmail,
+      credlyProfile: true,
+    });
+    const test = await source.testConnection();
+    store.registerSource(source);
+
+    // Query immediately to see what we got
+    const result = await source.query({});
+    return res.json({
+      registered: true,
+      id: source.id,
+      status: test.ok ? "connected" : "disconnected",
+      badges: result.statements.length,
+      sample: result.statements.slice(0, 3).map(s => ({
+        name: (s.object as any)?.definition?.name?.["en-US"],
+        issued: s.timestamp?.substring(0, 10),
+      })),
+      error: test.error,
+    });
   });
 
   app.post("/hela/sources/register/ctdl", async (req, res) => {
