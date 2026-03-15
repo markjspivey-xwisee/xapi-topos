@@ -1,0 +1,48 @@
+{
+  "name": "@foxxi/hela-wallet",
+  "version": "0.1.0",
+  "description": "HELA Wallet — sovereign learning identity for individual learners",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "hela-wallet": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "hela",
+    "wallet",
+    "did",
+    "verifiable-credentials",
+    "learning-identity",
+    "sovereign",
+    "xapi"
+  ],
+  "author": "Foxxi Mediums Inc.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/markjspivey-xwisee/xapi-topos.git",
+    "directory": "hela-wallet"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist/",
+    "public/"
+  ],
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.2",
+    "vitest": "^4.1.0"
+  }
+}

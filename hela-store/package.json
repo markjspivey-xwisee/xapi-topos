@@ -1,7 +1,7 @@
 {
   "name": "@foxxi/hela-store",
   "version": "0.1.0",
-  "description": "HELA presheaf store — abstract LRS/CLR/Badge/TLA layer grounded in topos theory",
+  "description": "HELA — zero-copy federated virtual semantic layer over the TLA + IEEE LER ecosystem",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {

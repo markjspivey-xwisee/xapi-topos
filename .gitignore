@@ -26,3 +26,5 @@ datasim/output/
 .idea/
 *.swp
 *.swo
+hela-wallet/node_modules/
+hela-wallet/dist/

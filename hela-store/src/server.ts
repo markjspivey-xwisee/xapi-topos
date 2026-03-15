@@ -939,62 +939,7 @@ export function createServer(store: HELAStore, options: CreateServerOptions = {}
     return res.json({ registered: true, id, status: test.ok ? "connected" : "disconnected", error: test.error });
   });
 
-  // ── Wallet routes ────────────────────────────────────────────────────────
-
-  // Wallet app
-  app.get("/wallet", (_req, res) => {
-    res.sendFile(path.join(__dirname, "..", "public", "wallet.html"));
-  });
-
-  // Wallet verification endpoint — verifiers can check credentials here
-  app.get("/wallet/verify", async (req, res) => {
-    const did = req.query.did as string;
-    const name = req.query.name as string;
-    if (!did) return res.status(400).json({ error: "did parameter required" });
-
-    // Return verification page (HTML for browsers, JSON for APIs)
-    const accept = req.headers.accept || "";
-    if (accept.includes("text/html")) {
-      return res.send(`<!DOCTYPE html>
-<html><head><title>HELA Verification</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0f;color:#e8e8f0;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.card{background:#12121a;border:1px solid #242436;border-radius:16px;padding:32px;max-width:480px;width:100%;text-align:center}
-h1{font-size:1.6rem;margin-bottom:8px;background:linear-gradient(135deg,#7c5cfc,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.did{font-family:monospace;font-size:0.7rem;color:#22d3ee;word-break:break-all;margin:12px 0;padding:12px;background:#0a0a0f;border-radius:8px}
-.status{display:inline-block;padding:6px 16px;border-radius:20px;font-size:0.8rem;font-weight:600;margin:12px 0}
-.verified{background:rgba(52,211,153,0.15);color:#34d399}
-p{color:#a0a0b8;font-size:0.85rem;line-height:1.5}
-</style></head><body>
-<div class="card">
-  <h1>HELA Wallet Verification</h1>
-  <div class="did">${did}</div>
-  <div class="status verified">DID Verified</div>
-  <p><strong>${name || "Learner"}</strong></p>
-  <p style="margin-top:16px;font-size:0.75rem;color:#606078">
-    This identity was generated using Ed25519/P-256 cryptography via the HELA Wallet.
-    Credentials issued under this DID are verifiable through the HELA presheaf proof system.
-  </p>
-  <p style="margin-top:12px"><a href="/wallet" style="color:#7c5cfc;text-decoration:none">Open HELA Wallet &rarr;</a></p>
-</div></body></html>`);
-    }
-
-    return res.json({
-      did,
-      name,
-      verified: true,
-      verification: {
-        method: "HELAPresheafProof",
-        topology: "hela:bare",
-        sheafCondition: "satisfied",
-        timestamp: new Date().toISOString(),
-      },
-    });
-  });
-
-  // Serve dashboard & wallet static files
+  // Serve ecosystem dashboard
   app.use(express.static(path.join(__dirname, "..", "public")));
 
   // ── 404 ───────────────────────────────────────────────────────────────────
