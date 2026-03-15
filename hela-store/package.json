@@ -1,0 +1,37 @@
+{
+  "name": "@foxxi/hela-store",
+  "version": "0.1.0",
+  "description": "HELA presheaf store — abstract LRS/CLR/Badge/TLA layer grounded in topos theory",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts",
+    "test": "ts-node src/conformance.ts",
+    "demo": "ts-node src/demo.ts"
+  },
+  "keywords": [
+    "xapi",
+    "lrs",
+    "topos",
+    "category-theory",
+    "hela",
+    "sat",
+    "learning"
+  ],
+  "author": "Foxxi Mediums Inc.",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "oxigraph": "^0.5.5",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.2"
+  }
+}

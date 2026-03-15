@@ -1,0 +1,28 @@
+node_modules/
+dist/
+*.js.map
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
+
+# HELA build artifacts
+hela-store/dist/
+
+# External tools (large binaries)
+lrsql/runtimes/
+lrsql/*.jar
+lrsql/db/
+datasim/*.jar
+datasim/output/
+
+# Archives
+*.tar.gz
+*.zip
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

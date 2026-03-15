@@ -1,0 +1,106 @@
+{
+    "profiles": [
+        {
+            "@context": "https://w3id.org/xapi/profiles/context",
+            "id": "https://w3id.org/xapi/cmi5",
+            "type": "Profile",
+            "conformsTo": "https://w3id.org/xapi/profiles#1.0",
+            "prefLabel": { "en": "cmi5 Profile" },
+            "definition": { "en": "cmi5 runtime communication between LMS and AU" },
+            "versions": [{ "id": "https://w3id.org/xapi/cmi5/v1.0", "generatedAtTime": "2017-03-27T12:30:00-07:00" }],
+            "author": { "type": "Organization", "name": "cmi5 Working Group" },
+            "concepts": [
+                { "id": "https://w3id.org/xapi/adl/verbs/abandoned", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "type": "Verb", "prefLabel": { "en": "abandoned" } },
+                { "id": "https://w3id.org/xapi/adl/verbs/satisfied", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "type": "Verb", "prefLabel": { "en": "satisfied" } },
+                { "id": "https://w3id.org/xapi/adl/verbs/waived", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "type": "Verb", "prefLabel": { "en": "waived" } },
+                { "id": "https://w3id.org/xapi/cmi5/activities/block", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "type": "ActivityType", "prefLabel": { "en": "block" } },
+                { "id": "https://w3id.org/xapi/cmi5/activities/course", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "type": "ActivityType", "prefLabel": { "en": "course" } },
+                { "id": "https://w3id.org/xapi/cmi5/result/extensions/progress", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "type": "ResultExtension", "prefLabel": { "en": "progress" }, "inlineSchema": "{ \"type\": \"number\", \"maximum\": 100, \"minimum\": 0, \"multipleOf\": 1.0 }" },
+                { "id": "https://w3id.org/xapi/cmi5/context/extensions/sessionid", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "type": "ContextExtension", "prefLabel": { "en": "session ID" } },
+                { "id": "https://w3id.org/xapi/cmi5/context/extensions/masteryscore", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "type": "ContextExtension", "prefLabel": { "en": "mastery score" } },
+                { "id": "https://w3id.org/xapi/cmi5/context/extensions/launchmode", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "type": "ContextExtension", "prefLabel": { "en": "launch mode" } },
+                { "id": "https://w3id.org/xapi/cmi5/context/extensions/launchurl", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "type": "ContextExtension", "prefLabel": { "en": "launch URL" } },
+                { "id": "https://w3id.org/xapi/cmi5/context/extensions/moveon", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "type": "ContextExtension", "prefLabel": { "en": "move on" } }
+            ],
+            "templates": [
+                {
+                    "id": "https://w3id.org/xapi/cmi5#generalrestrictions", "type": "StatementTemplate", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "prefLabel": { "en": "General Restrictions" },
+                    "rules": [
+                        { "location": "$.id", "presence": "included" },
+                        { "location": "$.timestamp", "presence": "included" },
+                        { "location": "$.context.extensions['https://w3id.org/xapi/cmi5/context/extensions/sessionid']", "presence": "included" }
+                    ]
+                },
+                { "id": "https://w3id.org/xapi/cmi5#launched", "type": "StatementTemplate", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "verb": "http://adlnet.gov/expapi/verbs/launched", "prefLabel": { "en": "Launched" }, "rules": [] },
+                { "id": "https://w3id.org/xapi/cmi5#initialized", "type": "StatementTemplate", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "verb": "http://adlnet.gov/expapi/verbs/initialized", "prefLabel": { "en": "Initialized" }, "rules": [] },
+                { "id": "https://w3id.org/xapi/cmi5#completed", "type": "StatementTemplate", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "verb": "http://adlnet.gov/expapi/verbs/completed", "prefLabel": { "en": "Completed" }, "rules": [{ "location": "$.result.completion", "presence": "included", "all": [true] }] },
+                { "id": "https://w3id.org/xapi/cmi5#passed", "type": "StatementTemplate", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "verb": "http://adlnet.gov/expapi/verbs/passed", "prefLabel": { "en": "Passed" }, "rules": [{ "location": "$.result.success", "presence": "included", "all": [true] }] },
+                { "id": "https://w3id.org/xapi/cmi5#failed", "type": "StatementTemplate", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "verb": "http://adlnet.gov/expapi/verbs/failed", "prefLabel": { "en": "Failed" }, "rules": [{ "location": "$.result.success", "presence": "included", "all": [false] }] },
+                { "id": "https://w3id.org/xapi/cmi5#terminated", "type": "StatementTemplate", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "verb": "http://adlnet.gov/expapi/verbs/terminated", "prefLabel": { "en": "Terminated" }, "rules": [] },
+                { "id": "https://w3id.org/xapi/cmi5#satisfied", "type": "StatementTemplate", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "verb": "http://adlnet.gov/expapi/verbs/satisfied", "prefLabel": { "en": "Satisfied" }, "rules": [] }
+            ],
+            "patterns": [
+                { "id": "https://w3id.org/xapi/cmi5#satisfieds", "type": "Pattern", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "zeroOrMore": "https://w3id.org/xapi/cmi5#satisfied" },
+                { "id": "https://w3id.org/xapi/cmi5#terminatedorabandoned", "type": "Pattern", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "alternates": ["https://w3id.org/xapi/cmi5#terminated"] },
+                { "id": "https://w3id.org/xapi/cmi5#noresultsession", "type": "Pattern", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "sequence": ["https://w3id.org/xapi/cmi5#launched", "https://w3id.org/xapi/cmi5#initialized", "https://w3id.org/xapi/cmi5#terminatedorabandoned"] },
+                { "id": "https://w3id.org/xapi/cmi5#passedsession", "type": "Pattern", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "sequence": ["https://w3id.org/xapi/cmi5#launched", "https://w3id.org/xapi/cmi5#initialized", "https://w3id.org/xapi/cmi5#passed", "https://w3id.org/xapi/cmi5#satisfieds", "https://w3id.org/xapi/cmi5#terminatedorabandoned"] },
+                { "id": "https://w3id.org/xapi/cmi5#completionpassedsession", "type": "Pattern", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "sequence": ["https://w3id.org/xapi/cmi5#launched", "https://w3id.org/xapi/cmi5#initialized", "https://w3id.org/xapi/cmi5#completed", "https://w3id.org/xapi/cmi5#passed", "https://w3id.org/xapi/cmi5#satisfieds", "https://w3id.org/xapi/cmi5#terminatedorabandoned"] },
+                { "id": "https://w3id.org/xapi/cmi5#failedsession", "type": "Pattern", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "sequence": ["https://w3id.org/xapi/cmi5#launched", "https://w3id.org/xapi/cmi5#initialized", "https://w3id.org/xapi/cmi5#failed", "https://w3id.org/xapi/cmi5#terminatedorabandoned"] },
+                { "id": "https://w3id.org/xapi/cmi5#typicalsession", "type": "Pattern", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "alternates": ["https://w3id.org/xapi/cmi5#completionpassedsession", "https://w3id.org/xapi/cmi5#failedsession", "https://w3id.org/xapi/cmi5#noresultsession", "https://w3id.org/xapi/cmi5#passedsession"] },
+                { "id": "https://w3id.org/xapi/cmi5#typicalsessions", "type": "Pattern", "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "oneOrMore": "https://w3id.org/xapi/cmi5#typicalsession" },
+                { "id": "https://w3id.org/xapi/cmi5#toplevel", "type": "Pattern", "primary": true, "inScheme": "https://w3id.org/xapi/cmi5/v1.0", "sequence": ["https://w3id.org/xapi/cmi5#satisfieds", "https://w3id.org/xapi/cmi5#typicalsessions"] }
+            ]
+        }
+    ],
+    "personae-array": [
+        {
+            "member": [
+                { "name": "Mark Spivey", "mbox": "mailto:mark@foxxi.io", "objectType": "Agent", "role": "Learner" },
+                { "name": "Jane Chen", "mbox": "mailto:jane@foxxi.io", "objectType": "Agent", "role": "Learner" },
+                { "name": "Alex Rivera", "mbox": "mailto:alex@foxxi.io", "objectType": "Agent", "role": "Learner" }
+            ],
+            "objectType": "Group",
+            "name": "HELA Learners"
+        }
+    ],
+    "models": [
+        {
+            "personae": [
+                { "id": "mbox::mailto:mark@foxxi.io", "type": "Agent" }
+            ],
+            "activities": [
+                { "id": "https://hela.foxxi.io/activity/topology-fundamentals", "weight": 0.8 },
+                { "id": "https://hela.foxxi.io/activity/category-theory-intro", "weight": 0.6 },
+                { "id": "https://hela.foxxi.io/activity/presheaf-semantics", "weight": 0.3 }
+            ]
+        },
+        {
+            "personae": [
+                { "id": "mbox::mailto:jane@foxxi.io", "type": "Agent" }
+            ],
+            "activities": [
+                { "id": "https://hela.foxxi.io/activity/topology-fundamentals", "weight": 0.5 },
+                { "id": "https://hela.foxxi.io/activity/category-theory-intro", "weight": 0.9 },
+                { "id": "https://hela.foxxi.io/activity/presheaf-semantics", "weight": 0.7 }
+            ]
+        },
+        {
+            "personae": [
+                { "id": "mbox::mailto:alex@foxxi.io", "type": "Agent" }
+            ],
+            "activities": [
+                { "id": "https://hela.foxxi.io/activity/topology-fundamentals", "weight": 0.4 },
+                { "id": "https://hela.foxxi.io/activity/category-theory-intro", "weight": 0.4 },
+                { "id": "https://hela.foxxi.io/activity/presheaf-semantics", "weight": 0.9 }
+            ]
+        }
+    ],
+    "parameters": {
+        "start": "2026-03-01T08:00:00.000Z",
+        "end": "2026-03-14T18:00:00.000Z",
+        "timezone": "America/New_York",
+        "seed": 42,
+        "from": "2026-03-01T08:00:00.000Z",
+        "maxPerPersonae": 50
+    }
+}

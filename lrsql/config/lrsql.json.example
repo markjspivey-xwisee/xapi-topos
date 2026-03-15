@@ -1,0 +1,23 @@
+{
+  "database": {
+    "dbHost": "0.0.0.0",
+    "dbPort": 5432,
+    "dbName": "lrsql_db",
+    "dbUser": "lrsql_user",
+    "dbPassword": "changeme"
+  },
+  "connection": {
+    "poolName": "my-pool-name"
+  },
+  "lrs" : {
+    "adminUserDefault": "myUsername",
+    "adminPassDefault": "changeme",
+    "authorityUrl": "http://mydomain.com"
+  },
+  "webserver": {
+    "httpHost": "0.0.0.0",
+    "httpPort": 8080,
+    "sslPort": 8443,
+    "allowAllOrigins": true
+  }
+}

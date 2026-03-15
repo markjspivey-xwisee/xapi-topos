@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HELA Store Dashboard</title>
+<style>
+:root {
+  --bg: #0d1117; --bg2: #161b22; --bg3: #1c2129; --border: #30363d;
+  --text: #c9d1d9; --text2: #8b949e; --text3: #6e7681;
+  --blue: #58a6ff; --green: #3fb950; --orange: #d29922; --red: #f85149;
+  --purple: #bc8cff; --cyan: #39c5cf; --pink: #f778ba;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: "Cascadia Code", "Fira Code", "JetBrains Mono", Consolas, monospace;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:var(--font); background:var(--bg); color:var(--text); display:flex; min-height:100vh; }
+a { color:var(--blue); text-decoration:none; }
+
+/* Sidebar */
+.sidebar { width:220px; background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; position:fixed; top:0; left:0; bottom:0; z-index:10; }
+.sidebar-header { padding:20px 16px 12px; border-bottom:1px solid var(--border); }
+.sidebar-header h1 { font-size:15px; font-weight:600; color:var(--text); }
+.sidebar-header .math { font-family:var(--mono); font-size:11px; color:var(--text3); margin-top:4px; }
+.sidebar nav { flex:1; padding:8px 0; overflow-y:auto; }
+.sidebar nav button {
+  display:flex; align-items:center; gap:10px; width:100%; padding:9px 16px; border:none;
+  background:transparent; color:var(--text2); font-size:13px; cursor:pointer; text-align:left;
+  font-family:var(--font); transition:all 0.15s;
+}
+.sidebar nav button:hover { background:var(--bg3); color:var(--text); }
+.sidebar nav button.active { background:rgba(88,166,255,0.1); color:var(--blue); border-right:2px solid var(--blue); }
+.sidebar nav button .icon { font-family:var(--mono); font-size:14px; width:20px; text-align:center; flex-shrink:0; }
+.sidebar-footer { padding:12px 16px; border-top:1px solid var(--border); }
+.sidebar-footer .stats { font-size:11px; color:var(--text3); font-family:var(--mono); }
+.sidebar-footer .stats span { color:var(--green); }
+
+/* Main */
+.main { margin-left:220px; flex:1; min-height:100vh; }
+.tab-content { display:none; padding:28px 32px; max-width:1200px; }
+.tab-content.active { display:block; }
+.tab-content h2 { font-size:20px; font-weight:600; margin-bottom:4px; }
+.tab-content h2 .math-sym { color:var(--purple); font-family:var(--mono); }
+.tab-content .subtitle { font-size:13px; color:var(--text3); margin-bottom:20px; font-family:var(--mono); }
+h3 { font-size:14px; font-weight:600; margin:20px 0 10px; color:var(--text2); }
+
+/* Cards */
+.card { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:16px; }
+.card-header { font-size:13px; font-weight:600; margin-bottom:10px; color:var(--text2); display:flex; justify-content:space-between; align-items:center; }
+.card-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.card-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+@media (max-width:900px) { .card-grid,.card-grid-3 { grid-template-columns:1fr; } }
+
+/* Forms */
+.form-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px; align-items:flex-end; }
+.form-group { display:flex; flex-direction:column; gap:4px; flex:1; min-width:160px; }
+.form-group label { font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; }
+input, select, textarea {
+  background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px 10px;
+  color:var(--text); font-size:13px; font-family:var(--mono); outline:none; width:100%;
+}
+input:focus, select:focus, textarea:focus { border-color:var(--blue); }
+textarea { resize:vertical; min-height:80px; }
+input[type="checkbox"] { width:auto; }
+.checkbox-row { display:flex; align-items:center; gap:8px; padding-top:18px; }
+.checkbox-row label { font-size:13px; color:var(--text); text-transform:none; letter-spacing:0; }
+
+/* Buttons */
+.btn {
+  padding:8px 16px; border:1px solid var(--border); border-radius:6px; background:var(--bg3);
+  color:var(--text); font-size:13px; cursor:pointer; font-family:var(--font); transition:all 0.15s;
+  white-space:nowrap;
+}
+.btn:hover { background:var(--border); }
+.btn-primary { background:rgba(88,166,255,0.15); border-color:rgba(88,166,255,0.4); color:var(--blue); }
+.btn-primary:hover { background:rgba(88,166,255,0.25); }
+.btn-green { background:rgba(63,185,80,0.15); border-color:rgba(63,185,80,0.4); color:var(--green); }
+.btn-green:hover { background:rgba(63,185,80,0.25); }
+.btn-red { background:rgba(248,81,73,0.1); border-color:rgba(248,81,73,0.3); color:var(--red); font-size:11px; padding:4px 10px; }
+.btn-red:hover { background:rgba(248,81,73,0.2); }
+.btn-sm { padding:4px 10px; font-size:11px; }
+.btn-group { display:flex; gap:8px; flex-wrap:wrap; }
+
+/* Output */
+.output { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:16px; margin-top:12px; overflow-x:auto; max-height:500px; overflow-y:auto; }
+.output pre { font-family:var(--mono); font-size:12px; line-height:1.6; white-space:pre-wrap; word-break:break-word; color:var(--text2); }
+.output.empty { display:flex; align-items:center; justify-content:center; min-height:80px; }
+.output.empty pre { color:var(--text3); font-style:italic; }
+
+/* Badges */
+.badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:500; font-family:var(--mono); }
+.badge-pass { background:rgba(63,185,80,0.15); color:var(--green); }
+.badge-fail { background:rgba(248,81,73,0.15); color:var(--red); }
+.badge-theorem { background:rgba(188,140,255,0.15); color:var(--purple); }
+.badge-runtime { background:rgba(88,166,255,0.15); color:var(--blue); }
+.badge-voided { background:rgba(248,81,73,0.15); color:var(--red); }
+.badge-active { background:rgba(63,185,80,0.15); color:var(--green); }
+.badge-grade { padding:3px 10px; font-size:12px; }
+.grade-mastered { background:rgba(63,185,80,0.2); color:var(--green); }
+.grade-proficient { background:rgba(88,166,255,0.2); color:var(--blue); }
+.grade-attempted { background:rgba(210,153,34,0.2); color:var(--orange); }
+.grade-absent { background:rgba(110,118,129,0.2); color:var(--text3); }
+
+/* Statement table */
+.stmt-table { width:100%; border-collapse:collapse; font-size:12px; }
+.stmt-table th { text-align:left; padding:8px 10px; color:var(--text3); font-weight:500; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; letter-spacing:0.5px; }
+.stmt-table td { padding:8px 10px; border-bottom:1px solid var(--border); font-family:var(--mono); vertical-align:middle; }
+.stmt-table tr:hover { background:var(--bg3); }
+.stmt-id { color:var(--blue); cursor:pointer; font-size:11px; }
+.stmt-id:hover { text-decoration:underline; }
+
+/* Conformance list */
+.conf-item { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+.conf-item:last-child { border-bottom:none; }
+.conf-id { font-family:var(--mono); font-size:11px; color:var(--text3); min-width:100px; }
+.conf-desc { font-size:13px; flex:1; }
+.conf-proof { font-size:11px; color:var(--text3); font-family:var(--mono); margin-top:4px; line-height:1.5; }
+
+/* Poset viz */
+.poset-node { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:6px; margin:4px; font-size:12px; font-family:var(--mono); border:1px solid var(--border); }
+.poset-arrow { color:var(--text3); font-size:14px; margin:0 4px; }
+
+/* Overview hero */
+.hero { text-align:center; padding:40px 0 20px; }
+.hero h2 { font-size:28px; margin-bottom:8px; }
+.hero .tagline { color:var(--text2); font-size:14px; margin-bottom:24px; }
+.hero .math-block { font-family:var(--mono); font-size:16px; color:var(--purple); margin:16px 0; }
+.feature-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-top:20px; }
+.feature-item { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:14px; text-align:left; }
+.feature-item .label { font-size:13px; font-weight:600; margin-bottom:4px; }
+.feature-item .desc { font-size:11px; color:var(--text3); }
+.feature-item .sym { font-family:var(--mono); color:var(--purple); margin-right:6px; }
+
+/* Loading */
+.loading { color:var(--text3); font-style:italic; }
+.flash { animation: flash-green 0.6s; }
+@keyframes flash-green { 0%{background:rgba(63,185,80,0.2)} 100%{background:transparent} }
+
+/* Preset query chips */
+.preset-chip {
+  display:inline-block; padding:5px 12px; border-radius:14px; font-size:11px;
+  background:var(--bg3); border:1px solid var(--border); color:var(--text2);
+  cursor:pointer; font-family:var(--mono); transition:all 0.15s;
+}
+.preset-chip:hover { border-color:var(--blue); color:var(--blue); }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h1>HELA Store</h1>
+    <div class="math">v0.1.0 &middot; @foxxi/hela-store</div>
+  </div>
+  <nav>
+    <button class="active" data-tab="overview"><span class="icon">&#8496;</span>Overview</button>
+    <button data-tab="statements"><span class="icon">&sigma;</span>Statements</button>
+    <button data-tab="views"><span class="icon">F</span>Five Views</button>
+    <button data-tab="mastery"><span class="icon">&Omega;</span>Mastery</button>
+    <button data-tab="ler"><span class="icon">&Gamma;</span>LER</button>
+    <button data-tab="query"><span class="icon">&chi;</span>Query DSL</button>
+    <button data-tab="federation"><span class="icon">&#119966;</span>Federation</button>
+    <button data-tab="learning"><span class="icon">L</span>Learning</button>
+    <button data-tab="sparql"><span class="icon">Q</span>SPARQL</button>
+    <button data-tab="lrsql"><span class="icon">Y</span>SQL LRS</button>
+    <button data-tab="scormcloud"><span class="icon">S</span>SCORM Cloud</button>
+    <button data-tab="datasim"><span class="icon">D</span>DataSim</button>
+    <button data-tab="sat"><span class="icon">&oplus;</span>SAT Status</button>
+    <button data-tab="conformance"><span class="icon">&check;</span>Conformance</button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="stats" id="sidebar-stats">&psi; objects: <span>0</span></div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- Overview -->
+  <section class="tab-content active" id="tab-overview">
+    <div class="hero">
+      <h2>HELA Store Dashboard</h2>
+      <div class="tagline">Abstract the LRS layer. Don't implement it.</div>
+      <div class="math-block">&Escr; = Set<sup>(&#119966;<sub>xAPI</sub><sup>op</sup>)</sup></div>
+      <div style="margin:24px 0">
+        <button class="btn btn-green" style="font-size:15px;padding:12px 28px" onclick="seedData()">Seed Demo Data</button>
+      </div>
+      <div id="seed-result" style="font-size:13px;color:var(--green);min-height:20px"></div>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-item"><div class="label"><span class="sym">&phi;</span>Realization</div><div class="desc">xAPI &rarr; RDF presheaf via &phi; : &Sigma; &rarr; &Escr;</div></div>
+      <div class="feature-item"><div class="label"><span class="sym">F</span>Geometric Morphisms</div><div class="desc">F_xAPI, F_CLR, F_Badge, F_CTDL, F_CASE &mdash; one &psi;, five views</div></div>
+      <div class="feature-item"><div class="label"><span class="sym">&perp;</span>Pushout Void</div><div class="desc">Voiding = colimit. Functors preserve it.</div></div>
+      <div class="feature-item"><div class="label"><span class="sym">J</span>Sheafification</div><div class="desc">Profile conformance = Grothendieck topology</div></div>
+      <div class="feature-item"><div class="label"><span class="sym">&Gamma;</span>Global Sections</div><div class="desc">LER = &Gamma;(P<sub>learner</sub>) &mdash; always current</div></div>
+      <div class="feature-item"><div class="label"><span class="sym">&Omega;</span>Subobject Classifier</div><div class="desc">Mastery as proof object, not boolean</div></div>
+      <div class="feature-item"><div class="label"><span class="sym">&#119966;</span>TLA Site</div><div class="desc">Federation = descent on Grothendieck site</div></div>
+      <div class="feature-item"><div class="label"><span class="sym">L</span>Learning Functor</div><div class="desc">L : &#119966;<sub>xAPI</sub> &rarr; &#119966;<sub>Mastery</sub> with &eta; : Id &rArr; L</div></div>
+      <div class="feature-item"><div class="label"><span class="sym">&chi;</span>Query DSL</div><div class="desc">AND = pullback, OR = pushout, NOT = complement</div></div>
+    </div>
+  </section>
+
+  <!-- Statements -->
+  <section class="tab-content" id="tab-statements">
+    <h2><span class="math-sym">&sigma;</span> Statements</h2>
+    <div class="subtitle">Insert xAPI statements into &Escr; via &phi; : &Sigma; &rarr; &Escr;</div>
+
+    <div class="card">
+      <div class="card-header">Insert Statement</div>
+      <div class="form-row">
+        <div class="form-group"><label>Actor Email</label><input type="text" id="stmt-actor" value="mailto:mark@foxxi.io"></div>
+        <div class="form-group"><label>Actor Name</label><input type="text" id="stmt-actor-name" value="Mark Spivey"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Verb</label>
+          <select id="stmt-verb">
+            <option value="http://adlnet.gov/expapi/verbs/completed">completed</option>
+            <option value="http://adlnet.gov/expapi/verbs/attempted">attempted</option>
+            <option value="http://adlnet.gov/expapi/verbs/passed">passed</option>
+            <option value="http://adlnet.gov/expapi/verbs/failed">failed</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Activity IRI</label><input type="text" id="stmt-activity" value="https://ctdlasn.org/hela/competencies/set-theory"></div>
+        <div class="form-group"><label>Activity Name</label><input type="text" id="stmt-activity-name" value="Set Theory"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Score (scaled)</label><input type="number" id="stmt-score" value="0.92" step="0.01" min="-1" max="1"></div>
+        <div class="checkbox-row"><input type="checkbox" id="stmt-completion" checked><label for="stmt-completion">Completion</label></div>
+        <div style="flex:2"></div>
+        <button class="btn btn-primary" onclick="insertStatement()">Insert &psi;</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Void Statement<span></span></div>
+      <div class="form-row">
+        <div class="form-group"><label>Statement ID to Void</label><input type="text" id="void-id" placeholder="paste UUID here"></div>
+        <button class="btn btn-red" style="font-size:13px;padding:8px 16px" onclick="voidStatement()">Void &psi;</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Stored Statements <button class="btn btn-sm" onclick="loadStatements()">Refresh</button></div>
+      <div id="stmt-list"><div class="output empty"><pre>No statements yet. Insert or seed data above.</pre></div></div>
+    </div>
+  </section>
+
+  <!-- Five Views -->
+  <section class="tab-content" id="tab-views">
+    <h2><span class="math-sym">F</span> Five Views</h2>
+    <div class="subtitle">F_xAPI, F_CLR, F_Badge, F_CTDL, F_CASE &mdash; geometric morphisms from &Escr;</div>
+
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group"><label>Statement / &psi; ID</label><input type="text" id="views-id" placeholder="paste UUID or click an ID from Statements tab"></div>
+        <button class="btn btn-primary" onclick="loadViews()">Show Views</button>
+      </div>
+    </div>
+
+    <div class="card-grid-3" id="views-panels">
+      <div class="card"><div class="card-header">F_xAPI(&psi;) &rarr; LRS</div><div class="output empty" id="view-xapi"><pre>Select a statement above</pre></div></div>
+      <div class="card"><div class="card-header">F_CLR(&psi;) &rarr; CLR</div><div class="output empty" id="view-clr"><pre>Select a statement above</pre></div></div>
+      <div class="card"><div class="card-header">F_Badge(&psi;) &rarr; OBv3</div><div class="output empty" id="view-badge"><pre>Select a statement above</pre></div></div>
+    </div>
+    <div class="card-grid" style="margin-top:0">
+      <div class="card"><div class="card-header">F_CTDL(&psi;) &rarr; CTDL</div><div class="output empty" id="view-ctdl"><pre>Select a statement above</pre></div></div>
+      <div class="card"><div class="card-header">F_CASE(&psi;) &rarr; CASE</div><div class="output empty" id="view-case"><pre>Select a statement above</pre></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Raw &psi; (triples + metadata)</div>
+      <div class="output empty" id="view-psi"><pre>Select a statement above</pre></div>
+    </div>
+  </section>
+
+  <!-- Mastery -->
+  <section class="tab-content" id="tab-mastery">
+    <h2><span class="math-sym">&Omega;</span> Mastery Classification</h2>
+    <div class="subtitle">&chi;_P : &#x3088;(activity) &rarr; &Omega; &mdash; structured proof object, not boolean</div>
+
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group"><label>Actor Key</label><input type="text" id="mastery-actor" value="mbox:mailto:mark@foxxi.io"></div>
+        <div class="form-group"><label>Activity IRI</label><input type="text" id="mastery-activity" value="https://ctdlasn.org/hela/competencies/category-theory"></div>
+        <div class="form-group"><label>Threshold</label><input type="number" id="mastery-threshold" value="0.9" step="0.05" min="0" max="1"></div>
+        <button class="btn btn-primary" onclick="classifyMastery()">Classify &chi;_P</button>
+      </div>
+    </div>
+
+    <div id="mastery-result">
+      <div class="output empty"><pre>Run a classification to see &Omega; value</pre></div>
+    </div>
+  </section>
+
+  <!-- LER -->
+  <section class="tab-content" id="tab-ler">
+    <h2><span class="math-sym">&Gamma;</span> Learning &amp; Employment Record</h2>
+    <div class="subtitle">&Gamma;(P<sub>learner</sub>) = Nat(1, P) &mdash; global sections, always current, no ETL</div>
+
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group"><label>Actor Key</label><input type="text" id="ler-actor" value="mbox:mailto:mark@foxxi.io"></div>
+        <button class="btn btn-primary" onclick="generateLER()">Generate LER</button>
+      </div>
+    </div>
+
+    <div id="ler-result">
+      <div class="output empty"><pre>Generate an LER to see global sections</pre></div>
+    </div>
+  </section>
+
+  <!-- Query DSL -->
+  <section class="tab-content" id="tab-query">
+    <h2><span class="math-sym">&chi;</span> Query DSL</h2>
+    <div class="subtitle">Queries as subpresheaves &mdash; AND = pullback, OR = pushout, NOT = complement</div>
+
+    <div class="card">
+      <div class="card-header">Preset Queries</div>
+      <div class="btn-group" style="flex-wrap:wrap;gap:8px">
+        <span class="preset-chip" onclick="setQuery('all')">&#8868; All</span>
+        <span class="preset-chip" onclick="setQuery('actor-mark')">actor = mark</span>
+        <span class="preset-chip" onclick="setQuery('completed')">completion = true</span>
+        <span class="preset-chip" onclick="setQuery('score-gte-09')">score &ge; 0.9</span>
+        <span class="preset-chip" onclick="setQuery('and-complex')">mark &and; (completed &or; score&ge;0.9)</span>
+        <span class="preset-chip" onclick="setQuery('triple-verb')">triple: predicate = xapi:verb</span>
+        <span class="preset-chip" onclick="setQuery('not-completed')">&not; completion</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Query Expression (JSON)</div>
+      <textarea id="query-expr" rows="6">{
+  "type": "all"
+}</textarea>
+      <div style="margin-top:10px"><button class="btn btn-primary" onclick="runQuery()">Execute &chi;_P</button></div>
+    </div>
+
+    <div id="query-result">
+      <div class="output empty"><pre>Run a query to see the subpresheaf</pre></div>
+    </div>
+  </section>
+
+  <!-- Federation -->
+  <section class="tab-content" id="tab-federation">
+    <h2><span class="math-sym">&#119966;</span> Federated Sources</h2>
+    <div class="subtitle">Zero-copy virtual semantic layer &mdash; &#119966;<sub>TLA</sub> Grothendieck site topology</div>
+
+    <div class="card">
+      <div class="card-header">Register xAPI Source <button class="btn btn-sm btn-primary" onclick="loadTopology()">Refresh Topology</button></div>
+      <div class="form-row">
+        <div class="form-group"><label>Source ID</label><input type="text" id="src-id" placeholder="lrsql-local"></div>
+        <div class="form-group"><label>Label</label><input type="text" id="src-label" placeholder="Yet Analytics SQL LRS"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex:2"><label>xAPI Endpoint</label><input type="text" id="src-endpoint" placeholder="http://localhost:9090/xapi"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Auth Type</label>
+          <select id="src-auth-type"><option value="basic">Basic Auth</option><option value="bearer">Bearer Token</option></select>
+        </div>
+        <div class="form-group"><label>Username / Token</label><input type="text" id="src-auth-user" placeholder="API key or token"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="src-auth-pass" placeholder="Secret key"></div>
+      </div>
+      <button class="btn btn-primary" onclick="registerSource()">Register Source</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Source Topology</div>
+      <div id="topology-view"><div class="output empty"><pre>Click Refresh Topology to see registered sources</pre></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Federated Query</div>
+      <div class="form-row">
+        <div class="form-group"><label>Actor (optional)</label><input type="text" id="fed-actor" placeholder='{"mbox":"mailto:mark@foxxi.io"}'></div>
+        <div class="form-group"><label>Limit</label><input type="number" id="fed-limit" value="50" style="width:80px"></div>
+        <button class="btn btn-primary" onclick="federatedQuery()">Query All Sources</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Federated Results <span id="fed-count" style="color:var(--text3);font-weight:normal"></span></div>
+      <div id="fed-result"><div class="output empty"><pre>Run a federated query to see zero-copy results across all sources</pre></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Federated LER</div>
+      <div class="form-row">
+        <div class="form-group"><label>Actor Key</label><input type="text" id="fed-ler-actor" value="mbox:mailto:mark@foxxi.io"></div>
+        <button class="btn btn-green" onclick="federatedLER()">Compute Federated LER</button>
+      </div>
+      <div id="fed-ler-result"><div class="output empty"><pre>Compute a federated LER &mdash; &Gamma;(P_actor) across all sources</pre></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Legacy Federation Demo</div>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:8px">In-memory TLA simulation with conflict resolution</p>
+      <button class="btn btn-sm" style="background:var(--bg3);color:var(--text2)" onclick="runFederation()">Run Demo</button>
+      <div id="fed-demo-result"></div>
+    </div>
+  </section>
+
+  <!-- Learning -->
+  <section class="tab-content" id="tab-learning">
+    <h2><span class="math-sym">L</span> Learning Functor</h2>
+    <div class="subtitle">L : &#119966;<sub>xAPI</sub> &rarr; &#119966;<sub>Mastery</sub> with &eta; : Id &rArr; L and j : &Omega; &rarr; &Omega;</div>
+
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group"><label>Actor Key</label><input type="text" id="learn-actor" value="mbox:mailto:mark@foxxi.io"></div>
+        <button class="btn btn-primary" onclick="loadProgression()">Show Progression</button>
+      </div>
+    </div>
+
+    <div id="learn-result">
+      <div class="output empty"><pre>Load progression to see L(actor) through the competency poset</pre></div>
+    </div>
+  </section>
+
+  <!-- SPARQL -->
+  <section class="tab-content" id="tab-sparql">
+    <h2><span class="math-sym">Q</span> SPARQL Query</h2>
+    <div class="subtitle">Execute SPARQL queries against the Oxigraph triplestore backing &Escr;</div>
+
+    <div class="card">
+      <div class="card-header">Preset Queries</div>
+      <div class="btn-group" style="flex-wrap:wrap;gap:8px">
+        <span class="preset-chip" onclick="setSparql('all-triples')">All triples (LIMIT 20)</span>
+        <span class="preset-chip" onclick="setSparql('graphs')">Named graphs</span>
+        <span class="preset-chip" onclick="setSparql('actors')">Distinct actors</span>
+        <span class="preset-chip" onclick="setSparql('verbs')">Verb usage counts</span>
+        <span class="preset-chip" onclick="setSparql('completed-scores')">Completed scores</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">SPARQL Query</div>
+      <textarea id="sparql-expr" rows="6">SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 20</textarea>
+      <div style="margin-top:10px"><button class="btn btn-primary" onclick="runSparql()">Execute Query</button></div>
+    </div>
+
+    <div id="sparql-result">
+      <div class="output empty"><pre>Run a SPARQL query (requires OxigraphAdapter)</pre></div>
+    </div>
+  </section>
+
+  <!-- SQL LRS (Yet Analytics) -->
+  <section class="tab-content" id="tab-lrsql">
+    <h2><span class="math-sym">Y</span> Yet Analytics SQL LRS</h2>
+    <div class="subtitle">Bidirectional sync with Yet Analytics open-source SQL LRS (lrsql)</div>
+
+    <div class="card">
+      <div class="card-header">Connection</div>
+      <div class="form-row">
+        <div class="form-group"><label>Endpoint</label><input type="text" id="lrsql-endpoint" value="http://localhost:9090"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>API Key</label><input type="text" id="lrsql-apikey" placeholder="API key from admin/creds"></div>
+        <div class="form-group"><label>Secret Key</label><input type="password" id="lrsql-secret" placeholder="Secret key from admin/creds"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px">— or connect with admin credentials —</div>
+      <div class="form-row">
+        <div class="form-group"><label>Admin User</label><input type="text" id="lrsql-admin-user" placeholder="Admin username"></div>
+        <div class="form-group"><label>Admin Pass</label><input type="password" id="lrsql-admin-pass" placeholder="Admin password"></div>
+        <button class="btn btn-primary" onclick="connectLRSQL()">Connect</button>
+      </div>
+      <div id="lrsql-connect-result" style="font-size:13px;margin-top:8px;min-height:20px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Sync</div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="lrsqlPull()">Pull &larr; SQL LRS</button>
+        <button class="btn btn-green" onclick="lrsqlPush()">Push &rarr; SQL LRS</button>
+        <button class="btn" onclick="lrsqlSync()">Bidirectional Sync &harr;</button>
+      </div>
+      <div id="lrsql-sync-result" style="font-size:13px;margin-top:8px;min-height:20px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Status <button class="btn btn-sm" onclick="loadLRSQLStatus()">Refresh</button></div>
+      <div id="lrsql-status"><div class="output empty"><pre>Not connected</pre></div></div>
+    </div>
+  </section>
+
+  <!-- SCORM Cloud -->
+  <section class="tab-content" id="tab-scormcloud">
+    <h2><span class="math-sym">S</span> SCORM Cloud</h2>
+    <div class="subtitle">Connect to Rustici SCORM Cloud &mdash; pull xAPI statements into &Escr;</div>
+
+    <div class="card">
+      <div class="card-header">Connection</div>
+      <div class="form-row">
+        <div class="form-group"><label>App ID</label><input type="text" id="sc-appid" placeholder="Your SCORM Cloud App ID"></div>
+        <div class="form-group"><label>Secret Key</label><input type="password" id="sc-secret" placeholder="Your SCORM Cloud Secret Key"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Endpoint</label><input type="text" id="sc-endpoint" value="https://cloud.scorm.com"></div>
+        <button class="btn btn-primary" onclick="connectScormCloud()">Connect</button>
+      </div>
+      <div id="sc-connect-result" style="font-size:13px;margin-top:8px;min-height:20px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Sync <button class="btn btn-sm btn-primary" onclick="syncScormCloud()">Sync Now</button></div>
+      <div id="sc-sync-result" style="font-size:13px;min-height:20px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Status</div>
+      <div id="sc-status"><div class="output empty"><pre>Not connected</pre></div></div>
+    </div>
+  </section>
+
+  <!-- DataSim -->
+  <section class="tab-content" id="tab-datasim">
+    <h2><span class="math-sym">D</span> Yet Analytics DataSim</h2>
+    <div class="subtitle">F_free(Profile &times; Personae) &rarr; Stmt^n &mdash; synthetic xAPI statement generator</div>
+
+    <div class="card">
+      <div class="card-header">DataSim Status <button class="btn btn-sm btn-primary" onclick="loadDataSimStatus()">Check</button></div>
+      <div id="datasim-status"><div class="output empty"><pre>Click Check to detect DataSim installation</pre></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Generate Statements</div>
+      <div class="form-row">
+        <div class="form-group"><label>Seed</label><input type="number" id="ds-seed" value="42" style="width:100px"></div>
+        <div class="form-group"><label>Actor Filter (optional)</label><input type="text" id="ds-actor" placeholder="mbox::mailto:mark@foxxi.io"></div>
+      </div>
+      <div class="form-row" style="margin-top:10px">
+        <button class="btn btn-primary" onclick="datasimGenerate()">Generate &rarr; HELA</button>
+        <button class="btn btn-green" onclick="datasimGeneratePost()">Generate &rarr; SQL LRS</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Generation Result</div>
+      <div id="datasim-result"><div class="output empty"><pre>Run a generation to see results</pre></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Generated Statements <span id="datasim-stmt-count" style="color:var(--text3);font-weight:normal"></span></div>
+      <div id="datasim-statements" style="max-height:400px;overflow-y:auto"><div class="output empty"><pre>No statements generated yet</pre></div></div>
+    </div>
+  </section>
+
+  <!-- SAT Status -->
+  <section class="tab-content" id="tab-sat">
+    <h2><span class="math-sym">&oplus;</span> SAT Orchestrator</h2>
+    <div class="subtitle">Secure, Accessible, Transparent &mdash; system health &amp; learner analysis</div>
+
+    <div class="card">
+      <div class="card-header">Health Check <button class="btn btn-sm btn-primary" onclick="loadSATStatus()">Refresh</button></div>
+      <div id="sat-health"><div class="output empty"><pre>Click Refresh to check system health</pre></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">Learner Analysis</div>
+      <div class="form-row">
+        <div class="form-group"><label>Actor Key</label><input type="text" id="sat-actor" value="mbox:mailto:mark@foxxi.io"></div>
+        <button class="btn btn-primary" onclick="analyzeSATLearner()">Analyze</button>
+      </div>
+    </div>
+
+    <div id="sat-learner-result">
+      <div class="output empty"><pre>Run an analysis to see full SAT learner report</pre></div>
+    </div>
+  </section>
+
+  <!-- Conformance -->
+  <section class="tab-content" id="tab-conformance">
+    <h2><span class="math-sym">&check;</span> Conformance Suite</h2>
+    <div class="subtitle">47 tests &mdash; 20 theorems (proven by structure) + 27 runtime</div>
+
+    <div class="card">
+      <button class="btn btn-green" onclick="runConformance()">Run Conformance Suite</button>
+      <span id="conf-summary" style="margin-left:16px;font-size:14px"></span>
+    </div>
+
+    <div id="conf-result"></div>
+  </section>
+
+</div>
+
+<script>
+// ── API ─────────────────────────────────────────────────────────────────────
+const api = {
+  async get(path) {
+    const r = await fetch(path);
+    return r.json();
+  },
+  async post(path, body) {
+    const r = await fetch(path, { method:'POST', headers:{'Content-Type':'application/json'}, body: body ? JSON.stringify(body) : undefined });
+    return r.json();
+  },
+  async put(path, body) {
+    const r = await fetch(path, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    return { status: r.status, body: await r.json() };
+  }
+};
+
+// ── Tabs ────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.sidebar nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar nav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    // Auto-load data for certain tabs
+    if (btn.dataset.tab === 'statements') loadStatements();
+    if (btn.dataset.tab === 'conformance' && !document.getElementById('conf-result').innerHTML) {
+      // don't auto-run
+    }
+  });
+});
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function json(obj) { return JSON.stringify(obj, null, 2); }
+function $(id) { return document.getElementById(id); }
+function setOutput(id, data, cls) {
+  const el = $(id);
+  el.className = 'output' + (cls ? ' ' + cls : '');
+  el.innerHTML = '<pre>' + syntaxHighlight(json(data)) + '</pre>';
+}
+
+function syntaxHighlight(str) {
+  return str
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?)/g, (match) => {
+      let cls = 'color:var(--orange)'; // string
+      if (/:$/.test(match)) cls = 'color:var(--blue)'; // key
+      else if (/^"http/.test(match) || /^"urn:/.test(match) || /^"mailto:/.test(match)) cls = 'color:var(--cyan)';
+      return '<span style="' + cls + '">' + match + '</span>';
+    })
+    .replace(/\b(true)\b/g, '<span style="color:var(--green)">$1</span>')
+    .replace(/\b(false)\b/g, '<span style="color:var(--red)">$1</span>')
+    .replace(/\b(null)\b/g, '<span style="color:var(--text3)">$1</span>')
+    .replace(/\b(-?\d+\.?\d*)\b/g, '<span style="color:var(--purple)">$1</span>');
+}
+
+function gradeBadge(grade) {
+  return `<span class="badge badge-grade grade-${grade}">${grade}</span>`;
+}
+
+async function refreshStats() {
+  try {
+    const stats = await api.get('/hela/stats');
+    $('sidebar-stats').innerHTML = `&psi; objects: <span>${stats.totalPsi}</span> &middot; active: <span>${stats.activeStatements}</span>`;
+  } catch(e) {}
+}
+
+// ── Seed ────────────────────────────────────────────────────────────────────
+async function seedData() {
+  const r = await api.post('/hela/seed');
+  $('seed-result').textContent = `Seeded ${r.seeded} statements (${r.statements.map(s=>s.activity).join(', ')})`;
+  $('seed-result').classList.add('flash');
+  setTimeout(() => $('seed-result').classList.remove('flash'), 700);
+  refreshStats();
+}
+
+// ── Statements ──────────────────────────────────────────────────────────────
+async function insertStatement() {
+  const stmt = {
+    actor: { mbox: $('stmt-actor').value, name: $('stmt-actor-name').value },
+    verb: { id: $('stmt-verb').value },
+    object: {
+      id: $('stmt-activity').value,
+      definition: {
+        name: { 'en-US': $('stmt-activity-name').value },
+        type: 'http://adlnet.gov/expapi/activities/course'
+      }
+    },
+    result: {
+      completion: $('stmt-completion').checked,
+      score: { scaled: parseFloat($('stmt-score').value) }
+    },
+    timestamp: new Date().toISOString()
+  };
+  const r = await api.put('/xapi/statements', stmt);
+  if (r.status === 200) {
+    loadStatements();
+    refreshStats();
+  } else {
+    alert('Error: ' + JSON.stringify(r.body));
+  }
+}
+
+async function voidStatement() {
+  const id = $('void-id').value.trim();
+  if (!id) return alert('Enter a statement ID to void');
+  const r = await api.put('/xapi/statements', {
+    actor: { mbox: 'mailto:system@foxxi.io' },
+    verb: { id: 'http://adlnet.gov/expapi/verbs/voided' },
+    object: { objectType: 'StatementRef', id }
+  });
+  if (r.status === 200) {
+    loadStatements();
+    refreshStats();
+  }
+}
+
+async function loadStatements() {
+  try {
+    const r = await api.get('/xapi/statements');
+    const stmts = r.statements || [];
+    if (stmts.length === 0) {
+      $('stmt-list').innerHTML = '<div class="output empty"><pre>No statements yet. Insert or seed data above.</pre></div>';
+      return;
+    }
+    let html = '<table class="stmt-table"><thead><tr><th>ID</th><th>Actor</th><th>Verb</th><th>Object</th><th>Score</th><th>Status</th><th></th></tr></thead><tbody>';
+    for (const s of stmts) {
+      const verb = (s.verb?.id || '').split('/').pop();
+      const actor = s.actor?.name || s.actor?.mbox || '?';
+      const objName = s.object?.definition?.name?.['en-US'] || s.object?.id?.split('/').pop() || '?';
+      const score = s.result?.score?.scaled !== undefined ? s.result.score.scaled.toFixed(2) : '—';
+      const voided = verb === 'voided';
+      const badge = voided ? '<span class="badge badge-voided">voiding</span>' : '<span class="badge badge-active">active</span>';
+      html += `<tr>
+        <td><span class="stmt-id" onclick="copyAndView('${s.id}')" title="Click to view in Three Views">${s.id.slice(0,8)}…</span></td>
+        <td>${actor}</td><td>${verb}</td><td title="${s.object?.id || ''}">${objName}</td>
+        <td>${score}</td><td>${badge}</td>
+        <td>${!voided ? '<button class="btn btn-red" onclick="quickVoid(\''+s.id+'\')">void</button>' : ''}</td>
+      </tr>`;
+    }
+    html += '</tbody></table>';
+    $('stmt-list').innerHTML = html;
+  } catch(e) {
+    $('stmt-list').innerHTML = '<div class="output"><pre>Error loading statements</pre></div>';
+  }
+}
+
+function copyAndView(id) {
+  $('views-id').value = id;
+  // Switch to views tab
+  document.querySelector('[data-tab="views"]').click();
+  loadViews();
+}
+
+function quickVoid(id) {
+  $('void-id').value = id;
+  voidStatement();
+}
+
+// ── Three Views ─────────────────────────────────────────────────────────────
+async function loadViews() {
+  const id = $('views-id').value.trim();
+  if (!id) return;
+  try {
+    const views = await api.get('/hela/views/' + id);
+    const v = views.views;
+    setOutput('view-xapi', v['F_xAPI(ψ)']);
+    if (v['F_CLR(ψ)']) setOutput('view-clr', v['F_CLR(ψ)']);
+    else { $('view-clr').className='output'; $('view-clr').innerHTML='<pre style="color:var(--text3)">null — voided or no completion</pre>'; }
+    if (v['F_Badge(ψ)']) setOutput('view-badge', v['F_Badge(ψ)']);
+    else { $('view-badge').className='output'; $('view-badge').innerHTML='<pre style="color:var(--text3)">null — voided or score &lt; 0.7</pre>'; }
+
+    if (v['F_CTDL(ψ)']) setOutput('view-ctdl', v['F_CTDL(ψ)']);
+    else { $('view-ctdl').className='output'; $('view-ctdl').innerHTML='<pre style="color:var(--text3)">null — no completion data</pre>'; }
+
+    if (v['F_CASE(ψ)']) setOutput('view-case', v['F_CASE(ψ)']);
+    else { $('view-case').className='output'; $('view-case').innerHTML='<pre style="color:var(--text3)">null — no activity data</pre>'; }
+
+    const psi = await api.get('/hela/psi/' + id);
+    setOutput('view-psi', psi);
+  } catch(e) {
+    $('view-xapi').innerHTML = '<pre style="color:var(--red)">Statement not found</pre>';
+  }
+}
+
+// ── Mastery ─────────────────────────────────────────────────────────────────
+async function classifyMastery() {
+  const actor = $('mastery-actor').value;
+  const activity = $('mastery-activity').value;
+  const threshold = $('mastery-threshold').value;
+  const r = await api.get(`/hela/classify?actor=${encodeURIComponent(actor)}&activity=${encodeURIComponent(activity)}&threshold=${threshold}`);
+
+  let html = '<div class="card" style="margin-top:12px"><div class="card-grid">';
+  html += '<div>';
+  html += `<h3>Truth Value in &Omega;</h3>`;
+  html += `<div style="margin:12px 0">${gradeBadge(r.truthGrade)}</div>`;
+  html += `<table style="font-size:13px;line-height:2">
+    <tr><td style="color:var(--text3);padding-right:16px">Claim</td><td>${r.claim}</td></tr>
+    <tr><td style="color:var(--text3)">Score</td><td>${r.score ?? '—'}</td></tr>
+    <tr><td style="color:var(--text3)">Topology</td><td style="font-family:var(--mono)">${r.topology}</td></tr>
+    <tr><td style="color:var(--text3)">Witnesses</td><td>${r.witnessingStatements?.length || 0} &psi; objects</td></tr>
+    <tr><td style="color:var(--text3)">&chi;_P</td><td style="font-family:var(--mono);font-size:11px">${r.classifyingMorphism}</td></tr>
+  </table>`;
+  html += '</div><div>';
+  html += '<h3>Evidence Sieve</h3>';
+  html += '<div class="output" style="margin-top:8px"><pre>' + syntaxHighlight(json(r.evidenceSieve)) + '</pre></div>';
+  html += '</div></div></div>';
+
+  $('mastery-result').innerHTML = html;
+}
+
+// ── LER ─────────────────────────────────────────────────────────────────────
+async function generateLER() {
+  const actor = $('ler-actor').value;
+  const r = await api.get('/hela/ler/' + encodeURIComponent(actor));
+
+  let html = '<div class="card" style="margin-top:12px">';
+  html += '<div class="card-header">Verifiable Credential &mdash; ' + r.type + '</div>';
+  html += '<div class="card-grid"><div>';
+  html += `<table style="font-size:13px;line-height:2">
+    <tr><td style="color:var(--text3);padding-right:16px">Issuer</td><td>${r.issuer}</td></tr>
+    <tr><td style="color:var(--text3)">Subject</td><td style="font-family:var(--mono);font-size:11px">${r.credentialSubject.id}</td></tr>
+    <tr><td style="color:var(--text3)">Assertions</td><td>${r.credentialSubject.assertions.length}</td></tr>
+    <tr><td style="color:var(--text3)">Proof Type</td><td style="font-family:var(--mono)">${r.proof.type}</td></tr>
+    <tr><td style="color:var(--text3)">&Gamma;</td><td style="font-family:var(--mono);font-size:11px">${r.proof.classifyingMorphism}</td></tr>
+  </table>`;
+  html += '</div><div>';
+  html += '<h3>Assertions</h3>';
+  for (const a of r.credentialSubject.assertions) {
+    html += `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+      <strong>${a.achievement.name}</strong> <span style="color:var(--text3)">${a.result?.value ? 'score: '+a.result.value : ''}</span>
+      <div style="color:var(--text3);font-size:11px">${a.earnedOn?.slice(0,10) || ''}</div>
+    </div>`;
+  }
+  html += '</div></div></div>';
+  html += '<div class="output" style="margin-top:12px"><pre>' + syntaxHighlight(json(r)) + '</pre></div>';
+
+  $('ler-result').innerHTML = html;
+}
+
+// ── Query DSL ───────────────────────────────────────────────────────────────
+const PRESETS = {
+  'all': { type: 'all' },
+  'actor-mark': { type:'atom', pred:{ type:'actor', value:'mbox:mailto:mark@foxxi.io' }},
+  'completed': { type:'atom', pred:{ type:'completion', value:true }},
+  'score-gte-09': { type:'atom', pred:{ type:'score', op:'gte', value:0.9 }},
+  'and-complex': {
+    type:'and',
+    left: { type:'atom', pred:{ type:'actor', value:'mbox:mailto:mark@foxxi.io' }},
+    right: { type:'or',
+      left: { type:'atom', pred:{ type:'completion', value:true }},
+      right: { type:'atom', pred:{ type:'score', op:'gte', value:0.9 }}
+    }
+  },
+  'triple-verb': { type:'atom', pred:{ type:'triple', pattern:{ predicate:'https://w3id.org/xapi/ontology#verb' }}},
+  'not-completed': { type:'not', inner:{ type:'atom', pred:{ type:'completion', value:true }}}
+};
+
+function setQuery(name) {
+  $('query-expr').value = json(PRESETS[name]);
+}
+
+async function runQuery() {
+  try {
+    const expr = JSON.parse($('query-expr').value);
+    const r = await api.post('/hela/query', expr);
+
+    let html = '<div class="card" style="margin-top:12px"><div class="card-grid"><div>';
+    html += `<h3>Result</h3>`;
+    html += `<table style="font-size:13px;line-height:2">
+      <tr><td style="color:var(--text3);padding-right:16px">Query</td><td style="font-family:var(--mono);font-size:11px">${r.query}</td></tr>
+      <tr><td style="color:var(--text3)">Count</td><td>${r.count}</td></tr>
+      <tr><td style="color:var(--text3)">Subpresheaf</td><td style="font-family:var(--mono);font-size:11px">${r.subpresheaf}</td></tr>
+      <tr><td style="color:var(--text3)">&chi;_P</td><td style="font-family:var(--mono);font-size:11px">${r.chi}</td></tr>
+    </table>`;
+    html += '</div><div>';
+    html += '<h3>Sieve</h3>';
+    html += '<div class="output" style="margin-top:8px"><pre>' + syntaxHighlight(json(r.sieve)) + '</pre></div>';
+    html += '</div></div></div>';
+
+    if (r.statements?.length) {
+      html += '<div class="output" style="margin-top:12px"><pre>' + syntaxHighlight(json(r.statements)) + '</pre></div>';
+    }
+    $('query-result').innerHTML = html;
+  } catch(e) {
+    $('query-result').innerHTML = '<div class="output"><pre style="color:var(--red)">Parse error: ' + e.message + '</pre></div>';
+  }
+}
+
+// ── Federation ──────────────────────────────────────────────────────────────
+// ── Federated Sources ────────────────────────────────────────────────────────
+async function registerSource() {
+  const id = $('src-id').value.trim();
+  const label = $('src-label').value.trim() || id;
+  const endpoint = $('src-endpoint').value.trim();
+  const authType = $('src-auth-type').value;
+  const user = $('src-auth-user').value.trim();
+  const pass = $('src-auth-pass').value.trim();
+
+  if (!id || !endpoint) { alert('Source ID and endpoint are required'); return; }
+
+  const auth = authType === 'basic'
+    ? { type: 'basic', username: user, password: pass }
+    : { type: 'bearer', token: user };
+
+  try {
+    const r = await api.post('/hela/sources/register', { id, label, endpoint, auth });
+    $('topology-view').innerHTML = `<div class="output"><pre style="color:var(--green)">Registered: ${r.id} (${r.label})
+Endpoint: ${endpoint}
+Version: ${(r.version||[]).join(', ')}
+Total sources: ${r.totalSources}</pre></div>`;
+    loadTopology();
+  } catch(e) {
+    $('topology-view').innerHTML = `<div class="output"><pre style="color:var(--red)">Error: ${e.message || e}</pre></div>`;
+  }
+}
+
+async function loadTopology() {
+  try {
+    const r = await api.get('/hela/sources/topology');
+    if (!r.sources || r.sources.length === 0) {
+      $('topology-view').innerHTML = `<div class="output"><pre style="color:var(--text3)">No sources registered. HELA is running in local-only mode.
+Register xAPI LRS endpoints above to enable zero-copy federated queries.
+Local cache: ${r.localPsiCount} &psi; objects</pre></div>`;
+      return;
+    }
+    let html = `<div style="font-size:12px;color:var(--text3);margin-bottom:12px">${r.totalSources} source(s) in topology &middot; ${r.localPsiCount} local &psi; cache</div>`;
+    html += '<table class="stmt-table"><thead><tr><th>ID</th><th>Label</th><th>Type</th><th>Endpoint</th><th>Status</th><th>Last Queried</th><th></th></tr></thead><tbody>';
+    for (const s of r.sources) {
+      const statusColor = s.status === 'connected' ? 'var(--green)' : s.status === 'disconnected' ? 'var(--red)' : 'var(--orange)';
+      html += `<tr><td style="font-family:var(--mono)">${s.id}</td><td>${s.label}</td><td style="color:var(--cyan)">${s.type}</td>`;
+      html += `<td style="font-size:11px;font-family:var(--mono)">${s.endpoint}</td>`;
+      html += `<td style="color:${statusColor}">${s.status}</td>`;
+      html += `<td style="color:var(--text3);font-size:11px">${s.lastQueried || 'never'}</td>`;
+      html += `<td><button class="btn btn-sm" style="background:var(--bg3);color:var(--red);font-size:11px" onclick="removeSource('${s.id}')">Remove</button></td></tr>`;
+    }
+    html += '</tbody></table>';
+    $('topology-view').innerHTML = html;
+  } catch(e) {
+    $('topology-view').innerHTML = `<div class="output"><pre style="color:var(--red)">Error loading topology</pre></div>`;
+  }
+}
+
+async function removeSource(id) {
+  await fetch(`/hela/sources/${id}`, { method: 'DELETE' });
+  loadTopology();
+}
+
+async function federatedQuery() {
+  const actorVal = $('fed-actor').value.trim();
+  const limit = $('fed-limit').value || '50';
+  let url = `/hela/federated/statements?limit=${limit}`;
+  if (actorVal) url += `&agent=${encodeURIComponent(actorVal)}`;
+
+  $('fed-result').innerHTML = '<span class="loading">Querying all sources...</span>';
+  try {
+    const r = await api.get(url);
+    $('fed-count').textContent = `(${r.count} statements from ${r.sourcesQueried} source(s), ${r.totalLatencyMs}ms)`;
+
+    let html = '';
+    // Provenance
+    if (r.provenance && r.provenance.length > 0) {
+      html += '<div style="margin-bottom:12px">';
+      for (const p of r.provenance) {
+        const color = p.error ? 'var(--red)' : 'var(--green)';
+        html += `<span style="display:inline-block;margin-right:12px;font-size:12px"><span style="color:${color}">&bull;</span> ${p.source}: ${p.count} stmts (${p.latencyMs}ms)${p.error ? ' ERR' : ''}</span>`;
+      }
+      html += '</div>';
+    }
+
+    // Statements table
+    const stmts = (r.statements || []).slice(0, 30);
+    html += '<table class="stmt-table"><thead><tr><th>Actor</th><th>Verb</th><th>Object</th><th>Time</th></tr></thead><tbody>';
+    for (const s of stmts) {
+      const verb = s.verb?.id?.split('/').pop() || '?';
+      const actor = s.actor?.name || s.actor?.mbox || '?';
+      const obj = (s.object?.id || '?').split('/').pop();
+      html += `<tr><td>${actor}</td><td style="color:var(--blue)">${verb}</td><td style="color:var(--cyan)">${obj}</td><td style="color:var(--text3);font-size:11px">${(s.timestamp||'').substring(0,19)}</td></tr>`;
+    }
+    html += '</tbody></table>';
+    if (r.count > 30) html += `<div style="color:var(--text3);font-size:12px;margin-top:8px">... and ${r.count - 30} more</div>`;
+
+    $('fed-result').innerHTML = html;
+  } catch(e) {
+    $('fed-result').innerHTML = `<div class="output"><pre style="color:var(--red)">Error: ${e.message || e}</pre></div>`;
+  }
+}
+
+async function federatedLER() {
+  const actor = $('fed-ler-actor').value.trim();
+  $('fed-ler-result').innerHTML = '<span class="loading">Computing federated LER across all sources...</span>';
+  try {
+    const r = await api.get(`/hela/federated/ler/${encodeURIComponent(actor)}`);
+    let html = '<div class="output"><pre style="color:var(--green)">';
+    html += `Federated LER for ${r.credentialSubject?.id}\n`;
+    html += `Assertions: ${r.credentialSubject?.assertions?.length || 0}\n`;
+    html += `Sources queried: ${r.federation?.sourcesQueried || 0}\n`;
+    if (r.federation?.sourceResults) {
+      for (const sr of r.federation.sourceResults) {
+        html += `  ${sr.label || sr.id}: ${sr.count} stmts (${sr.latencyMs}ms)\n`;
+      }
+    }
+    html += `Proof: ${r.proof?.classifyingMorphism}\n`;
+    html += '</pre></div>';
+    html += '<div class="output" style="margin-top:8px"><pre>' + syntaxHighlight(json(r)) + '</pre></div>';
+    $('fed-ler-result').innerHTML = html;
+  } catch(e) {
+    $('fed-ler-result').innerHTML = `<div class="output"><pre style="color:var(--red)">Error: ${e.message || e}</pre></div>`;
+  }
+}
+
+async function runFederation() {
+  $('fed-demo-result').innerHTML = '<span class="loading">Running federation demo...</span>';
+  const r = await api.post('/hela/federation/demo');
+  let html = '<div class="output" style="margin-top:8px"><pre>' + syntaxHighlight(json(r)) + '</pre></div>';
+  $('fed-demo-result').innerHTML = html;
+}
+
+// ── Learning ────────────────────────────────────────────────────────────────
+async function loadProgression() {
+  const actor = $('learn-actor').value;
+  $('learn-result').innerHTML = '<div class="output"><pre class="loading">Computing L(actor)...</pre></div>';
+  const r = await api.get('/hela/progression/' + encodeURIComponent(actor));
+
+  let html = '';
+
+  // Mastered
+  html += '<div class="card" style="margin-top:12px"><div class="card-header">Competency Progression</div>';
+
+  // Visual poset
+  html += '<div style="margin-bottom:16px">';
+  const allNodes = [...(r.mastered||[]), ...(r.inProgress||[]), ...(r.notStarted||[]).map(id => ({id, grade:'absent'}))];
+  // Show mastered
+  if (r.mastered?.length) {
+    html += '<h3 style="margin-top:0">Mastered</h3><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">';
+    for (const m of r.mastered) {
+      html += `<div class="poset-node" style="border-color:var(--green)">${gradeBadge('mastered')} <span style="font-size:11px">${m.id.split('/').pop()}</span> <span style="color:var(--purple)">${m.score?.toFixed(2) ?? ''}</span></div>`;
+    }
+    html += '</div>';
+  }
+
+  if (r.inProgress?.length) {
+    html += '<h3>In Progress</h3><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">';
+    for (const m of r.inProgress) {
+      html += `<div class="poset-node" style="border-color:var(--orange)">${gradeBadge(m.grade)} <span style="font-size:11px">${m.id.split('/').pop()}</span> <span style="color:var(--purple)">${m.score?.toFixed(2) ?? ''}</span></div>`;
+    }
+    html += '</div>';
+  }
+
+  if (r.notStarted?.length) {
+    html += '<h3>Not Started</h3><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">';
+    for (const id of r.notStarted) {
+      html += `<div class="poset-node" style="border-color:var(--border)">${gradeBadge('absent')} <span style="font-size:11px">${id.split('/').pop()}</span></div>`;
+    }
+    html += '</div>';
+  }
+
+  if (r.nextRecommended?.length) {
+    html += '<h3>Recommended Next</h3><div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px">';
+    for (const n of r.nextRecommended) {
+      html += `<div class="poset-node" style="border-color:var(--blue);background:rgba(88,166,255,0.08)"><span style="color:var(--blue)">&rarr;</span> <span style="font-size:11px">${n.label}</span></div>`;
+    }
+    html += '</div>';
+  }
+  html += '</div></div>';
+
+  // Naturality checks
+  if (r.naturalityChecks?.length) {
+    html += '<div class="card"><div class="card-header">Naturality Squares</div>';
+    for (const c of r.naturalityChecks) {
+      const icon = c.naturalitySquareSatisfied ? '<span style="color:var(--green)">&#10003;</span>' : '<span style="color:var(--red)">&#10007;</span>';
+      const from = c.morphism.from.split('/').pop();
+      const to = c.morphism.to.split('/').pop();
+      html += `<div style="padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+        ${icon} <span style="font-family:var(--mono)">${from} &rarr; ${to}</span>
+        <span style="color:var(--text3);margin-left:12px">${gradeBadge(c.fromGrade)} &rarr; ${gradeBadge(c.toGrade)}</span>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${c.interpretation}</div>
+      </div>`;
+    }
+    html += '</div>';
+  }
+
+  // Raw JSON
+  html += '<div class="output" style="margin-top:12px"><pre>' + syntaxHighlight(json(r)) + '</pre></div>';
+
+  $('learn-result').innerHTML = html;
+}
+
+// ── Conformance ─────────────────────────────────────────────────────────────
+async function runConformance() {
+  $('conf-result').innerHTML = '<div class="output"><pre class="loading">Running 47 conformance tests...</pre></div>';
+  const r = await api.get('/hela/conformance');
+
+  $('conf-summary').innerHTML = `<span class="badge badge-pass" style="font-size:14px;padding:4px 14px">${r.summary.score}</span> <span style="color:var(--text3);font-size:13px">${r.summary.theorems} theorems + ${r.summary.passed - r.summary.theorems} runtime</span>`;
+
+  let html = '';
+
+  // Theorems
+  const theorems = r.results.filter(t => t.method === 'theorem');
+  const runtime = r.results.filter(t => t.method === 'runtime');
+
+  html += '<div class="card" style="margin-top:12px"><div class="card-header">Theorems (proven by structure)</div>';
+  for (const t of theorems) {
+    const icon = t.status === 'PASS' ? '<span style="color:var(--green)">&#10003;</span>' : '<span style="color:var(--red)">&#10007;</span>';
+    html += `<div class="conf-item">
+      ${icon}
+      <span class="conf-id">${t.id}</span>
+      <div>
+        <div class="conf-desc">${t.description}</div>
+        ${t.proof ? '<div class="conf-proof">' + t.proof.slice(0,200) + (t.proof.length>200?'…':'') + '</div>' : ''}
+      </div>
+      <span class="badge badge-theorem">theorem</span>
+    </div>`;
+  }
+  html += '</div>';
+
+  html += '<div class="card"><div class="card-header">Runtime Tests</div>';
+  for (const t of runtime) {
+    const icon = t.status === 'PASS' ? '<span style="color:var(--green)">&#10003;</span>' : '<span style="color:var(--red)">&#10007;</span>';
+    html += `<div class="conf-item">
+      ${icon}
+      <span class="conf-id">${t.id}</span>
+      <div class="conf-desc">${t.description}</div>
+      <span class="badge badge-runtime">runtime</span>
+    </div>`;
+  }
+  html += '</div>';
+
+  $('conf-result').innerHTML = html;
+}
+
+// ── SPARQL ───────────────────────────────────────────────────────────────────
+const SPARQL_PRESETS = {
+  'all-triples': 'SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 20',
+  'graphs': 'SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o } } LIMIT 50',
+  'actors': 'SELECT DISTINCT ?actor WHERE { ?s <https://w3id.org/xapi/ontology#actor> ?actor } LIMIT 20',
+  'verbs': 'SELECT ?verb (COUNT(?s) AS ?count) WHERE { ?s <https://w3id.org/xapi/ontology#verb> ?verb } GROUP BY ?verb ORDER BY DESC(?count)',
+  'completed-scores': 'SELECT ?s ?score WHERE { ?s <https://w3id.org/xapi/ontology#verb> <http://adlnet.gov/expapi/verbs/completed> . ?s <https://w3id.org/xapi/ontology#score> ?score } LIMIT 20',
+};
+
+function setSparql(name) {
+  $('sparql-expr').value = SPARQL_PRESETS[name] || '';
+}
+
+async function runSparql() {
+  const query = $('sparql-expr').value.trim();
+  if (!query) return;
+  try {
+    const r = await api.post('/hela/sparql', { query });
+    let html = `<div class="card" style="margin-top:12px"><div class="card-header">Results (${r.count} rows)</div>`;
+    html += '<div class="output"><pre>' + syntaxHighlight(json(r.results)) + '</pre></div></div>';
+    $('sparql-result').innerHTML = html;
+  } catch(e) {
+    $('sparql-result').innerHTML = '<div class="output"><pre style="color:var(--red)">Error: ' + e.message + '</pre></div>';
+  }
+}
+
+// ── SQL LRS (Yet Analytics) ───────────────────────────────────────────────────
+async function connectLRSQL() {
+  const endpoint = $('lrsql-endpoint').value.trim();
+  const apiKey = $('lrsql-apikey').value.trim();
+  const secretKey = $('lrsql-secret').value.trim();
+  const adminUser = $('lrsql-admin-user').value.trim();
+  const adminPass = $('lrsql-admin-pass').value.trim();
+
+  if (!endpoint) return alert('Endpoint is required');
+  if (!apiKey && !adminUser) return alert('Provide API key or admin credentials');
+
+  const body = { endpoint };
+  if (apiKey) { body.apiKey = apiKey; body.secretKey = secretKey; }
+  if (adminUser) { body.adminUser = adminUser; body.adminPass = adminPass; }
+
+  try {
+    const r = await api.post('/hela/lrsql/connect', body);
+    if (r.error) {
+      $('lrsql-connect-result').innerHTML = '<span style="color:var(--red)">' + r.error + '</span>';
+    } else {
+      $('lrsql-connect-result').innerHTML = '<span style="color:var(--green)">Connected to ' + r.endpoint + ' (xAPI ' + (r.version||[]).join(', ') + ')</span>';
+      loadLRSQLStatus();
+    }
+  } catch(e) {
+    $('lrsql-connect-result').innerHTML = '<span style="color:var(--red)">Error: ' + e.message + '</span>';
+  }
+}
+
+async function lrsqlPull() {
+  $('lrsql-sync-result').innerHTML = '<span class="loading">Pulling from SQL LRS...</span>';
+  try {
+    const r = await api.post('/hela/lrsql/pull');
+    if (r.error) { $('lrsql-sync-result').innerHTML = '<span style="color:var(--red)">' + r.error + '</span>'; return; }
+    $('lrsql-sync-result').innerHTML = `<span style="color:var(--green)">Pulled: ${r.pulled}, Skipped: ${r.skipped}, Errors: ${r.errors?.length||0}</span>`;
+    refreshStats();
+  } catch(e) { $('lrsql-sync-result').innerHTML = '<span style="color:var(--red)">Error: ' + e.message + '</span>'; }
+}
+
+async function lrsqlPush() {
+  $('lrsql-sync-result').innerHTML = '<span class="loading">Pushing to SQL LRS...</span>';
+  try {
+    const r = await api.post('/hela/lrsql/push');
+    if (r.error) { $('lrsql-sync-result').innerHTML = '<span style="color:var(--red)">' + r.error + '</span>'; return; }
+    $('lrsql-sync-result').innerHTML = `<span style="color:var(--green)">Pushed: ${r.pushed}, Skipped: ${r.skipped}, Errors: ${r.errors?.length||0}</span>`;
+  } catch(e) { $('lrsql-sync-result').innerHTML = '<span style="color:var(--red)">Error: ' + e.message + '</span>'; }
+}
+
+async function lrsqlSync() {
+  $('lrsql-sync-result').innerHTML = '<span class="loading">Syncing bidirectionally...</span>';
+  try {
+    const r = await api.post('/hela/lrsql/sync');
+    if (r.error) { $('lrsql-sync-result').innerHTML = '<span style="color:var(--red)">' + r.error + '</span>'; return; }
+    $('lrsql-sync-result').innerHTML = `<span style="color:var(--green)">Pulled: ${r.pulled}, Pushed: ${r.pushed}, Skipped: ${r.skipped}, Errors: ${r.errors?.length||0}</span>`;
+    refreshStats();
+  } catch(e) { $('lrsql-sync-result').innerHTML = '<span style="color:var(--red)">Error: ' + e.message + '</span>'; }
+}
+
+async function loadLRSQLStatus() {
+  try {
+    const r = await api.get('/hela/lrsql/status');
+    setOutput('lrsql-status', r);
+  } catch(e) {
+    $('lrsql-status').innerHTML = '<div class="output"><pre style="color:var(--red)">Error</pre></div>';
+  }
+}
+
+// ── DataSim ──────────────────────────────────────────────────────────────────
+async function loadDataSimStatus() {
+  try {
+    const r = await fetch('/hela/datasim/status');
+    const d = await r.json();
+    if (d.available) {
+      $('datasim-status').innerHTML = `<div class="output"><pre style="color:var(--green)">DataSim detected
+JAR: ${d.jarPath}
+Java: ${d.javaPath}
+Profile: ${d.defaultProfile || 'none'}
+Personae: ${d.defaultPersonae || 'none'}</pre></div>`;
+    } else {
+      $('datasim-status').innerHTML = `<div class="output"><pre style="color:var(--orange)">DataSim not detected. Place datasim_cli.jar in the datasim/ directory.</pre></div>`;
+    }
+  } catch(e) {
+    $('datasim-status').innerHTML = `<div class="output"><pre style="color:var(--red)">Error checking DataSim status</pre></div>`;
+  }
+}
+
+async function datasimGenerate() {
+  const seed = parseInt($('ds-seed').value) || 42;
+  const actor = $('ds-actor').value.trim() || undefined;
+  $('datasim-result').innerHTML = '<span class="loading">Generating statements via DataSim CLI...</span>';
+  try {
+    const r = await fetch('/hela/datasim/generate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ seed, actor, ingest: true })
+    });
+    const d = await r.json();
+    if (d.error) {
+      $('datasim-result').innerHTML = `<div class="output"><pre style="color:var(--red)">${d.error}</pre></div>`;
+      return;
+    }
+    $('datasim-result').innerHTML = `<div class="output"><pre style="color:var(--green)">${d.count} statements generated and ingested into HELA
+Seed: ${d.seed}
+Time: ${d.timestamp}</pre></div>`;
+    $('datasim-stmt-count').textContent = `(${d.count} statements)`;
+    // Show first 20 statements
+    const stmts = (d.statements || []).slice(0, 20);
+    let html = '<table style="width:100%;font-size:12px"><tr style="color:var(--text3)"><th>Actor</th><th>Verb</th><th>Object</th><th>Timestamp</th></tr>';
+    for (const s of stmts) {
+      const verb = s.verb?.id?.split('/').pop() || '?';
+      const actor = s.actor?.name || s.actor?.mbox || '?';
+      const obj = s.object?.id?.split('/').pop() || '?';
+      html += `<tr><td>${actor}</td><td style="color:var(--blue)">${verb}</td><td style="color:var(--cyan)">${obj}</td><td style="color:var(--text3)">${(s.timestamp||'').substring(11,19)}</td></tr>`;
+    }
+    html += '</table>';
+    if (d.count > 20) html += `<div style="color:var(--text3);font-size:12px;margin-top:8px">... and ${d.count - 20} more</div>`;
+    $('datasim-statements').innerHTML = html;
+    loadStats();
+  } catch(e) {
+    $('datasim-result').innerHTML = `<div class="output"><pre style="color:var(--red)">Error: ${e.message}</pre></div>`;
+  }
+}
+
+async function datasimGeneratePost() {
+  const seed = parseInt($('ds-seed').value) || 42;
+  const actor = $('ds-actor').value.trim() || undefined;
+  $('datasim-result').innerHTML = '<span class="loading">Generating and posting to SQL LRS...</span>';
+  try {
+    const r = await fetch('/hela/datasim/generate-post', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ seed, actor })
+    });
+    const d = await r.json();
+    if (d.error) {
+      $('datasim-result').innerHTML = `<div class="output"><pre style="color:var(--red)">${d.error}</pre></div>`;
+      return;
+    }
+    $('datasim-result').innerHTML = `<div class="output"><pre style="color:var(--green)">Posted to ${d.endpoint}
+Time: ${d.timestamp}
+
+Use SQL LRS tab to pull statements into HELA.</pre></div>`;
+  } catch(e) {
+    $('datasim-result').innerHTML = `<div class="output"><pre style="color:var(--red)">Error: ${e.message}</pre></div>`;
+  }
+}
+
+// ── SCORM Cloud ──────────────────────────────────────────────────────────────
+async function connectScormCloud() {
+  const appId = $('sc-appid').value.trim();
+  const secretKey = $('sc-secret').value.trim();
+  const endpoint = $('sc-endpoint').value.trim();
+  if (!appId || !secretKey) return alert('App ID and Secret Key are required');
+  try {
+    const r = await api.post('/hela/scormcloud/connect', { appId, secretKey, endpoint });
+    $('sc-connect-result').innerHTML = '<span style="color:var(--green)">Connected to ' + r.endpoint + '</span>';
+    loadScormCloudStatus();
+  } catch(e) {
+    $('sc-connect-result').innerHTML = '<span style="color:var(--red)">Error: ' + e.message + '</span>';
+  }
+}
+
+async function syncScormCloud() {
+  try {
+    $('sc-sync-result').innerHTML = '<span class="loading">Syncing...</span>';
+    const r = await api.post('/hela/scormcloud/sync');
+    if (r.error) {
+      $('sc-sync-result').innerHTML = '<span style="color:var(--red)">' + r.error + '</span>';
+    } else {
+      const sc = r.scormCloud;
+      $('sc-sync-result').innerHTML = sc
+        ? `<span style="color:var(--green)">Inserted: ${sc.inserted}, Skipped: ${sc.skipped}, Errors: ${sc.errors?.length || 0}</span>`
+        : '<span style="color:var(--text3)">No SCORM Cloud data</span>';
+      refreshStats();
+    }
+  } catch(e) {
+    $('sc-sync-result').innerHTML = '<span style="color:var(--red)">Error: ' + e.message + '</span>';
+  }
+}
+
+async function loadScormCloudStatus() {
+  try {
+    const r = await api.get('/hela/scormcloud/status');
+    setOutput('sc-status', r);
+  } catch(e) {
+    $('sc-status').innerHTML = '<div class="output"><pre style="color:var(--red)">Error</pre></div>';
+  }
+}
+
+// ── SAT ──────────────────────────────────────────────────────────────────────
+async function loadSATStatus() {
+  try {
+    const r = await api.get('/hela/sat/status');
+    let html = '<div class="card-grid" style="margin-top:12px">';
+    html += '<div class="card"><div class="card-header">Store</div><table style="font-size:13px;line-height:2">';
+    html += `<tr><td style="color:var(--text3);padding-right:16px">Status</td><td><span class="badge badge-${r.store?.status === 'ok' ? 'pass' : 'fail'}">${r.store?.status}</span></td></tr>`;
+    html += `<tr><td style="color:var(--text3)">Objects</td><td>${r.store?.psiCount ?? 0}</td></tr>`;
+    html += '</table></div>';
+
+    html += '<div class="card"><div class="card-header">SCORM Cloud</div><table style="font-size:13px;line-height:2">';
+    html += `<tr><td style="color:var(--text3);padding-right:16px">Status</td><td><span class="badge badge-${r.scormCloud?.status === 'connected' ? 'pass' : r.scormCloud?.status === 'disconnected' ? 'fail' : 'theorem'}">${r.scormCloud?.status}</span></td></tr>`;
+    if (r.scormCloud?.lastSync) html += `<tr><td style="color:var(--text3)">Last Sync</td><td>${r.scormCloud.lastSync}</td></tr>`;
+    html += '</table></div>';
+
+    html += '<div class="card"><div class="card-header">Federation</div><table style="font-size:13px;line-height:2">';
+    html += `<tr><td style="color:var(--text3);padding-right:16px">Status</td><td><span class="badge badge-${r.federation?.status === 'ok' ? 'pass' : 'theorem'}">${r.federation?.status}</span></td></tr>`;
+    if (r.federation?.nodeCount) html += `<tr><td style="color:var(--text3)">Nodes</td><td>${r.federation.nodeCount}</td></tr>`;
+    html += '</table></div>';
+
+    html += '<div class="card"><div class="card-header">Competency</div><table style="font-size:13px;line-height:2">';
+    html += `<tr><td style="color:var(--text3);padding-right:16px">Status</td><td><span class="badge badge-${r.competency?.status === 'ok' ? 'pass' : 'theorem'}">${r.competency?.status}</span></td></tr>`;
+    if (r.competency?.nodeCount) html += `<tr><td style="color:var(--text3)">Nodes</td><td>${r.competency.nodeCount}</td></tr>`;
+    html += '</table></div>';
+    html += '</div>';
+
+    $('sat-health').innerHTML = html;
+  } catch(e) {
+    $('sat-health').innerHTML = '<div class="output"><pre style="color:var(--red)">Error: ' + e.message + '</pre></div>';
+  }
+}
+
+async function analyzeSATLearner() {
+  const actor = $('sat-actor').value;
+  try {
+    const r = await api.get('/hela/sat/learner/' + encodeURIComponent(actor));
+    let html = '<div class="card" style="margin-top:12px"><div class="card-header">Learner Analysis: ' + r.actor + '</div>';
+    html += '<div class="card-grid"><div>';
+    html += '<h3>Views</h3><table style="font-size:13px;line-height:2">';
+    html += `<tr><td style="color:var(--text3);padding-right:16px">xAPI Statements</td><td>${r.views?.xapiStatements ?? 0}</td></tr>`;
+    html += `<tr><td style="color:var(--text3)">CLR Assertions</td><td>${r.views?.clrAssertions ?? 0}</td></tr>`;
+    html += `<tr><td style="color:var(--text3)">Badge Assertions</td><td>${r.views?.badgeAssertions ?? 0}</td></tr>`;
+    html += `<tr><td style="color:var(--text3)">CTDL Credentials</td><td>${r.views?.ctdlCredentials ?? 0}</td></tr>`;
+    html += `<tr><td style="color:var(--text3)">CASE Items</td><td>${r.views?.caseItems ?? 0}</td></tr>`;
+    html += '</table></div>';
+    html += '<div><h3>Progression</h3>';
+    html += '<div class="output" style="margin-top:8px;max-height:250px"><pre>' + syntaxHighlight(json(r.progression)) + '</pre></div>';
+    html += '</div></div></div>';
+    html += '<div class="output" style="margin-top:12px"><pre>' + syntaxHighlight(json(r)) + '</pre></div>';
+    $('sat-learner-result').innerHTML = html;
+  } catch(e) {
+    $('sat-learner-result').innerHTML = '<div class="output"><pre style="color:var(--red)">Error: ' + e.message + '</pre></div>';
+  }
+}
+
+// ── Init ────────────────────────────────────────────────────────────────────
+refreshStats();
+setInterval(refreshStats, 5000);
+</script>
+</body>
+</html>

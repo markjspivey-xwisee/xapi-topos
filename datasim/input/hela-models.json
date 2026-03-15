@@ -1,0 +1,32 @@
+[
+    {
+        "personae": [
+            { "id": "mbox::mailto:mark@foxxi.io", "type": "Agent" }
+        ],
+        "activities": [
+            { "id": "https://hela.foxxi.io/activity/topology-fundamentals", "weight": 0.8 },
+            { "id": "https://hela.foxxi.io/activity/category-theory-intro", "weight": 0.6 },
+            { "id": "https://hela.foxxi.io/activity/presheaf-semantics", "weight": 0.3 }
+        ]
+    },
+    {
+        "personae": [
+            { "id": "mbox::mailto:jane@foxxi.io", "type": "Agent" }
+        ],
+        "activities": [
+            { "id": "https://hela.foxxi.io/activity/topology-fundamentals", "weight": 0.5 },
+            { "id": "https://hela.foxxi.io/activity/category-theory-intro", "weight": 0.9 },
+            { "id": "https://hela.foxxi.io/activity/presheaf-semantics", "weight": 0.7 }
+        ]
+    },
+    {
+        "personae": [
+            { "id": "mbox::mailto:alex@foxxi.io", "type": "Agent" }
+        ],
+        "activities": [
+            { "id": "https://hela.foxxi.io/activity/topology-fundamentals", "weight": 0.4 },
+            { "id": "https://hela.foxxi.io/activity/category-theory-intro", "weight": 0.4 },
+            { "id": "https://hela.foxxi.io/activity/presheaf-semantics", "weight": 0.9 }
+        ]
+    }
+]

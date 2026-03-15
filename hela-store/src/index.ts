@@ -1,0 +1,27 @@
+// @foxxi/hela-store — public API
+export { HELAStore, F_xAPI, F_CLR, F_Badge, F_CTDL, F_CASE, produceLER, produceFederatedLER, realize } from "./store";
+export { SourceRegistry, xAPISource, BadgeSource, CTDLSource } from "./sources";
+export type { FederatedSource, FederatedQueryResult, FederatedMergeResult, SourceMetadata, SourceCapabilities, xAPISourceConfig, BadgeSourceConfig, CTDLSourceConfig } from "./sources";
+export { createServer } from "./server";
+export type { CreateServerOptions } from "./server";
+export { buildProfile, KNOWN_PROFILES, loadProfileFromURL } from "./profiles";
+export { runConformanceSuite, runFederationSuite, runQuerySuite, runNaturalTransformationSuite } from "./conformance";
+export { FederatedSite, buildTLASite, httpPipe } from "./federation";
+export type { FederationNode, SiteMorphism, TLASieve, GlobalSection, FederationConflict, ConflictResolution, CocycleCheck } from "./federation";
+export { Query, QueryExecutor, fromXAPIParams } from "./query";
+export type { QueryResult, QueryExpr, AtomicPredicate, TriplePattern } from "./query";
+export { LearningFunctor, EvidenceAccumulation, ProgressionReport, temporalClosure, verifyJIdempotence, buildHELACurriculumPoset, buildProfileUpgrade } from "./natural";
+export type { CompetencyPoset, CompetencyNode, CompetencyLevel, NaturalityCheck, ProgressionState, ProfileUpgrade } from "./natural";
+export { InMemoryAdapter, JSONFileAdapter, ConsoleLogAdapter, ComposeAdapter, OxigraphAdapter } from "./adapters";
+export type { StoreAdapter } from "./adapters";
+export { SCORMCloudConnector } from "./scormcloud";
+export type { SyncResult } from "./scormcloud";
+export { LRSQLConnector } from "./lrsql";
+export type { LRSQLConfig, LRSQLSyncResult, LRSQLStatus } from "./lrsql";
+export { SATOrchestrator } from "./sat";
+export type { SATConfig, HealthReport, LearnerAnalysis } from "./sat";
+export { DataSimConnector } from "./datasim";
+export type { DataSimConfig, GenerateOptions, GeneratePostOptions, DataSimResult, DataSimPostResult } from "./datasim";
+export { VCIssuer, verifyPresentation, generateRecommendations } from "./credentials";
+export type { VerifiableCredential, VerifiablePresentation, PeerVerificationResult, Recommendation, HELAKeyPair } from "./credentials";
+export * from "./types";

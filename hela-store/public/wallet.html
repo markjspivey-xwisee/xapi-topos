@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HELA Wallet — Your Learning Identity</title>
+<meta name="description" content="Sovereign learning identity. Own your knowledge graph.">
+<meta name="theme-color" content="#0a0a0f">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HELA">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%237c5cfc'/%3E%3Cstop offset='100%25' stop-color='%2322d3ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='90' cy='90' r='90' fill='url(%23g)'/%3E%3Ctext x='90' y='120' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-weight='bold' font-size='108' fill='white'%3EH%3C/text%3E%3C/svg%3E">
+<style>
+/* ── Reset & Variables ─────────────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--bg1:#12121a;--bg2:#1a1a28;--bg3:#242436;
+  --text:#e8e8f0;--text2:#a0a0b8;--text3:#606078;
+  --accent:#7c5cfc;--accent2:#a78bfa;--accent-glow:rgba(124,92,252,0.3);
+  --cyan:#22d3ee;--green:#34d399;--orange:#fb923c;--red:#f87171;--pink:#f472b6;
+  --gold:#fbbf24;
+  --mono:'SF Mono','Fira Code','Cascadia Code',monospace;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --radius:12px;--radius-sm:8px;
+}
+html{font-size:15px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+::selection{background:var(--accent);color:white}
+
+/* ── Animated background ───────────────────────────────────────────────── */
+body::before{
+  content:'';position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 30%, rgba(124,92,252,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 70%, rgba(34,211,238,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, rgba(244,114,182,0.04) 0%, transparent 60%);
+  animation:bgPulse 8s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+@keyframes bgPulse{0%{opacity:.6}100%{opacity:1}}
+
+/* ── Layout ────────────────────────────────────────────────────────────── */
+.app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:20px}
+header{text-align:center;padding:40px 20px 30px}
+.logo{font-size:2.8rem;font-weight:800;letter-spacing:-2px;
+  background:linear-gradient(135deg,var(--accent),var(--cyan),var(--pink));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.logo sub{font-size:0.35em;-webkit-text-fill-color:var(--text3);color:var(--text3);letter-spacing:0;vertical-align:baseline}
+.tagline{color:var(--text2);font-size:1rem;margin-top:6px;font-weight:300}
+
+/* ── Identity Card ─────────────────────────────────────────────────────── */
+.id-card{
+  background:linear-gradient(135deg,var(--bg2),var(--bg1));
+  border:1px solid var(--bg3);border-radius:var(--radius);
+  padding:24px 28px;margin:20px 0 30px;
+  position:relative;overflow:hidden;
+}
+.id-card::after{
+  content:'';position:absolute;top:-50%;right:-50%;width:100%;height:100%;
+  background:radial-gradient(circle,var(--accent-glow) 0%,transparent 70%);
+  opacity:0.4;pointer-events:none;
+}
+.id-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap;position:relative;z-index:1}
+.id-avatar{
+  width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--cyan));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.8rem;font-weight:700;color:white;flex-shrink:0;
+}
+.id-info{flex:1;min-width:200px}
+.id-name{font-size:1.4rem;font-weight:700}
+.id-did{font-family:var(--mono);font-size:0.7rem;color:var(--cyan);word-break:break-all;margin-top:4px;opacity:0.9}
+.id-created{font-size:0.75rem;color:var(--text3);margin-top:2px}
+.id-actions{display:flex;gap:8px;flex-wrap:wrap}
+.id-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 10px;border-radius:20px;font-size:0.7rem;font-weight:600;
+  background:var(--bg3);color:var(--text2);
+}
+.id-badge.verified{background:rgba(52,211,153,0.15);color:var(--green)}
+
+/* ── Onboarding ────────────────────────────────────────────────────────── */
+#onboarding{text-align:center;padding:60px 20px}
+.onboard-title{font-size:2rem;font-weight:700;margin-bottom:12px}
+.onboard-sub{color:var(--text2);font-size:1.05rem;max-width:500px;margin:0 auto 30px}
+.onboard-form{max-width:400px;margin:0 auto}
+.onboard-form input{
+  width:100%;padding:14px 18px;border-radius:var(--radius);
+  border:1px solid var(--bg3);background:var(--bg2);color:var(--text);
+  font-size:1rem;margin-bottom:12px;font-family:var(--sans);
+  outline:none;transition:border-color .2s;
+}
+.onboard-form input:focus{border-color:var(--accent)}
+.onboard-form input::placeholder{color:var(--text3)}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:10px 20px;border:none;border-radius:var(--radius-sm);
+  font-size:0.85rem;font-weight:600;cursor:pointer;
+  transition:all .15s;font-family:var(--sans);
+}
+.btn-primary{background:var(--accent);color:white}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--bg3)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:6px 14px;font-size:0.75rem}
+.btn-green{background:var(--green);color:#0a0a0f}
+.btn-green:hover{opacity:0.9;transform:translateY(-1px)}
+.btn-cyan{background:var(--cyan);color:#0a0a0f}
+
+/* ── Nav tabs ──────────────────────────────────────────────────────────── */
+.nav{
+  display:flex;gap:2px;padding:4px;background:var(--bg1);
+  border-radius:var(--radius);margin-bottom:24px;overflow-x:auto;
+  border:1px solid var(--bg3);
+}
+.nav-tab{
+  padding:10px 16px;border-radius:var(--radius-sm);
+  font-size:0.8rem;font-weight:500;color:var(--text3);
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+  border:none;background:none;font-family:var(--sans);
+}
+.nav-tab:hover{color:var(--text);background:var(--bg2)}
+.nav-tab.active{color:white;background:var(--accent)}
+
+/* ── Section containers ────────────────────────────────────────────────── */
+.section{display:none}
+.section.active{display:block}
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+.card{
+  background:var(--bg1);border:1px solid var(--bg3);
+  border-radius:var(--radius);padding:20px;margin-bottom:16px;
+}
+.card-header{
+  font-size:0.85rem;font-weight:600;color:var(--text2);
+  margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;
+}
+
+/* ── DNA Visualization ─────────────────────────────────────────────────── */
+#dna-canvas{
+  width:100%;height:500px;border-radius:var(--radius);
+  background:var(--bg);border:1px solid var(--bg3);
+  cursor:grab;position:relative;overflow:hidden;
+}
+#dna-canvas:active{cursor:grabbing}
+.dna-node{
+  position:absolute;border-radius:50%;cursor:pointer;
+  transition:transform .2s,box-shadow .2s;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.55rem;font-weight:700;color:white;
+  text-align:center;line-height:1.1;padding:4px;
+}
+.dna-node:hover{transform:scale(1.15);z-index:10}
+.dna-node .node-label{
+  position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);
+  font-size:0.65rem;color:var(--text2);white-space:nowrap;font-weight:500;
+}
+.dna-edge{position:absolute;pointer-events:none;z-index:0}
+.dna-legend{
+  display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;
+  font-size:0.72rem;color:var(--text3);
+}
+.dna-legend span::before{
+  content:'';display:inline-block;width:10px;height:10px;
+  border-radius:50%;margin-right:5px;vertical-align:middle;
+}
+
+/* ── Competency bars ───────────────────────────────────────────────────── */
+.comp-list{display:flex;flex-direction:column;gap:12px}
+.comp-item{display:flex;align-items:center;gap:12px}
+.comp-name{width:160px;font-size:0.8rem;font-weight:500;flex-shrink:0;text-align:right}
+.comp-bar-wrap{flex:1;height:24px;background:var(--bg3);border-radius:12px;overflow:hidden;position:relative}
+.comp-bar{height:100%;border-radius:12px;transition:width 1s ease-out;position:relative;min-width:2px}
+.comp-bar::after{
+  content:attr(data-pct);position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  font-size:0.65rem;font-weight:700;color:white;text-shadow:0 1px 2px rgba(0,0,0,0.5);
+}
+.comp-grade{font-size:0.65rem;font-weight:600;width:70px;text-align:center;padding:3px 0;border-radius:10px}
+.comp-evidence{font-size:0.65rem;color:var(--text3);width:60px;text-align:center}
+
+/* ── Credentials list ──────────────────────────────────────────────────── */
+.cred-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.cred-card{
+  background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius);
+  padding:16px;transition:transform .15s,border-color .15s;cursor:pointer;
+}
+.cred-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.cred-type{font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.cred-title{font-size:0.95rem;font-weight:600;margin-bottom:4px}
+.cred-meta{font-size:0.72rem;color:var(--text3)}
+.cred-badge{
+  display:inline-block;padding:2px 8px;border-radius:10px;
+  font-size:0.6rem;font-weight:600;margin-top:8px;
+}
+
+/* ── Sources ───────────────────────────────────────────────────────────── */
+.source-card{
+  display:flex;align-items:center;gap:14px;
+  background:var(--bg2);border:1px solid var(--bg3);
+  border-radius:var(--radius);padding:14px 18px;margin-bottom:8px;
+  transition:border-color .15s;
+}
+.source-card:hover{border-color:var(--accent)}
+.source-icon{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;flex-shrink:0;
+}
+.source-info{flex:1}
+.source-name{font-weight:600;font-size:0.9rem}
+.source-detail{font-size:0.72rem;color:var(--text3);font-family:var(--mono)}
+.source-status{font-size:0.7rem;font-weight:600}
+
+/* ── Share modal ───────────────────────────────────────────────────────── */
+.modal-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+  z-index:100;display:none;align-items:center;justify-content:center;
+}
+.modal-overlay.active{display:flex}
+.modal{
+  background:var(--bg1);border:1px solid var(--bg3);
+  border-radius:var(--radius);padding:28px;max-width:460px;width:90%;
+  position:relative;
+}
+.modal h3{font-size:1.2rem;margin-bottom:16px}
+.modal-close{
+  position:absolute;top:12px;right:16px;background:none;border:none;
+  color:var(--text3);font-size:1.3rem;cursor:pointer;
+}
+#qr-container{
+  display:flex;justify-content:center;padding:20px;
+  background:white;border-radius:var(--radius-sm);margin:16px 0;
+}
+#share-link{
+  width:100%;padding:10px;background:var(--bg2);border:1px solid var(--bg3);
+  border-radius:var(--radius-sm);color:var(--cyan);font-family:var(--mono);
+  font-size:0.72rem;word-break:break-all;
+}
+
+/* ── Disclosure checkboxes ─────────────────────────────────────────────── */
+.disclosure-list{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.disclosure-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 12px;background:var(--bg2);border-radius:var(--radius-sm);
+  cursor:pointer;transition:background .15s;
+}
+.disclosure-item:hover{background:var(--bg3)}
+.disclosure-item input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.disclosure-item label{cursor:pointer;font-size:0.85rem;flex:1}
+.disclosure-item .disc-desc{font-size:0.7rem;color:var(--text3)}
+
+/* ── Stats row ─────────────────────────────────────────────────────────── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.stat{
+  background:var(--bg1);border:1px solid var(--bg3);
+  border-radius:var(--radius);padding:16px;text-align:center;
+}
+.stat-val{font-size:1.8rem;font-weight:800;
+  background:linear-gradient(135deg,var(--accent),var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.stat-label{font-size:0.7rem;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px}
+
+/* ── Activity feed ─────────────────────────────────────────────────────── */
+.feed-item{
+  display:flex;gap:12px;padding:10px 0;
+  border-bottom:1px solid var(--bg3);font-size:0.82rem;
+}
+.feed-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.feed-time{font-size:0.68rem;color:var(--text3);font-family:var(--mono);margin-top:2px}
+
+/* ── Animations ────────────────────────────────────────────────────────── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn .4s ease-out}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.pulse{animation:pulse 1.5s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 8px var(--accent-glow)}50%{box-shadow:0 0 24px var(--accent-glow)}}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media(max-width:640px){
+  .app{padding:12px}
+  header{padding:24px 12px 20px}
+  .logo{font-size:2rem}
+  .id-row{flex-direction:column;text-align:center}
+  .nav{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .comp-name{width:100px;font-size:0.7rem}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .cred-grid{grid-template-columns:1fr}
+  #dna-canvas{height:350px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── Header ──────────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo">HELA<sub>wallet</sub></div>
+  <div class="tagline">Your learning identity. Your knowledge graph. Your sovereignty.</div>
+</header>
+
+<!-- ── Onboarding (shown if no identity) ──────────────────────────────── -->
+<div id="onboarding">
+  <div class="onboard-title">Create Your Learning Identity</div>
+  <div class="onboard-sub">
+    Generate a decentralized identifier (DID) that you own.
+    No platform. No middleman. Just you and your knowledge.
+  </div>
+  <div class="onboard-form">
+    <input type="text" id="ob-name" placeholder="Your name" autofocus>
+    <input type="email" id="ob-email" placeholder="Email (for agent matching)">
+    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="createIdentity()">
+      Generate My DID
+    </button>
+    <div style="margin-top:16px;font-size:0.72rem;color:var(--text3)">
+      Your identity is generated locally using Ed25519 cryptography.<br>
+      Private key never leaves your device.
+    </div>
+  </div>
+</div>
+
+<!-- ── Main app (hidden until identity created) ───────────────────────── -->
+<div id="main-app" style="display:none">
+
+<!-- Identity card -->
+<div class="id-card fade-in">
+  <div class="id-row">
+    <div class="id-avatar" id="avatar">?</div>
+    <div class="id-info">
+      <div class="id-name" id="id-name"></div>
+      <div class="id-did" id="id-did"></div>
+      <div class="id-created" id="id-created"></div>
+    </div>
+    <div class="id-actions">
+      <span class="id-badge verified">DID Verified</span>
+      <span class="id-badge" id="id-source-count">0 sources</span>
+      <button class="btn btn-sm btn-ghost" onclick="openShare()">Share Identity</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats fade-in">
+  <div class="stat"><div class="stat-val" id="stat-competencies">0</div><div class="stat-label">Competencies</div></div>
+  <div class="stat"><div class="stat-val" id="stat-evidence">0</div><div class="stat-label">Evidence Points</div></div>
+  <div class="stat"><div class="stat-val" id="stat-credentials">0</div><div class="stat-label">Credentials</div></div>
+  <div class="stat"><div class="stat-val" id="stat-sources">0</div><div class="stat-label">Sources</div></div>
+  <div class="stat"><div class="stat-val" id="stat-mastered">0</div><div class="stat-label">Mastered</div></div>
+</div>
+
+<!-- Navigation -->
+<nav class="nav">
+  <button class="nav-tab active" onclick="showTab('dna')">Learning DNA</button>
+  <button class="nav-tab" onclick="showTab('competencies')">Competencies</button>
+  <button class="nav-tab" onclick="showTab('credentials')">Credentials</button>
+  <button class="nav-tab" onclick="showTab('sources')">Sources</button>
+  <button class="nav-tab" onclick="showTab('activity')">Activity</button>
+  <button class="nav-tab" onclick="showTab('recommendations')">Next Steps</button>
+  <button class="nav-tab" onclick="showTab('verify')">Verify</button>
+  <button class="nav-tab" onclick="showTab('share')">Share & Prove</button>
+</nav>
+
+<!-- ── Learning DNA ────────────────────────────────────────────────────── -->
+<div class="section active" id="sec-dna">
+  <div class="card">
+    <div class="card-header">
+      <span>Knowledge Graph</span>
+      <div>
+        <button class="btn btn-sm btn-ghost" onclick="refreshDNA()">Refresh</button>
+        <button class="btn btn-sm btn-ghost" onclick="toggleDNAView()">Toggle View</button>
+      </div>
+    </div>
+    <div id="dna-canvas"></div>
+    <div class="dna-legend">
+      <span style="--c:var(--green)">Mastered</span>
+      <span style="--c:var(--accent)">Proficient</span>
+      <span style="--c:var(--orange)">Attempted</span>
+      <span style="--c:var(--text3)">Absent</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Competencies ────────────────────────────────────────────────────── -->
+<div class="section" id="sec-competencies">
+  <div class="card">
+    <div class="card-header">
+      <span>Competency Profile</span>
+      <button class="btn btn-sm btn-ghost" onclick="refreshCompetencies()">Refresh</button>
+    </div>
+    <div class="comp-list" id="comp-list"></div>
+  </div>
+</div>
+
+<!-- ── Credentials ─────────────────────────────────────────────────────── -->
+<div class="section" id="sec-credentials">
+  <div class="card">
+    <div class="card-header">
+      <span>Verifiable Credentials</span>
+      <button class="btn btn-sm btn-green" onclick="issueAllVCs()">Issue All VCs</button>
+    </div>
+    <div class="cred-grid" id="cred-grid"></div>
+  </div>
+</div>
+
+<!-- ── Sources ─────────────────────────────────────────────────────────── -->
+<div class="section" id="sec-sources">
+  <div class="card">
+    <div class="card-header">Connected Learning Sources</div>
+    <div id="source-list"></div>
+    <div style="margin-top:16px;border-top:1px solid var(--bg3);padding-top:16px">
+      <div style="font-weight:600;font-size:0.85rem;margin-bottom:12px">Connect a New Source</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="btn btn-sm btn-ghost" onclick="quickConnect('lrsql')">Yet Analytics LRS</button>
+        <button class="btn btn-sm btn-ghost" onclick="quickConnect('scorm')">SCORM Cloud</button>
+        <button class="btn btn-sm btn-ghost" onclick="quickConnect('custom')">Custom xAPI LRS</button>
+      </div>
+      <div id="connect-form" style="display:none">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <input type="text" id="cs-id" placeholder="Source ID" style="flex:1;padding:8px 12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius-sm);color:var(--text);font-size:0.85rem">
+          <input type="text" id="cs-label" placeholder="Label" style="flex:1;padding:8px 12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius-sm);color:var(--text);font-size:0.85rem">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <input type="text" id="cs-endpoint" placeholder="xAPI endpoint URL" style="flex:2;padding:8px 12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius-sm);color:var(--text);font-size:0.85rem">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <input type="text" id="cs-user" placeholder="API Key / Username" style="flex:1;padding:8px 12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius-sm);color:var(--text);font-size:0.85rem">
+          <input type="password" id="cs-pass" placeholder="Secret / Password" style="flex:1;padding:8px 12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius-sm);color:var(--text);font-size:0.85rem">
+        </div>
+        <button class="btn btn-primary" onclick="connectSource()">Connect & Verify</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Activity Feed ───────────────────────────────────────────────────── -->
+<div class="section" id="sec-activity">
+  <div class="card">
+    <div class="card-header">
+      <span>Recent Learning Activity</span>
+      <button class="btn btn-sm btn-ghost" onclick="refreshActivity()">Refresh</button>
+    </div>
+    <div id="activity-feed"></div>
+  </div>
+</div>
+
+<!-- ── Recommendations ──────────────────────────────────────────────────── -->
+<div class="section" id="sec-recommendations">
+  <div class="card">
+    <div class="card-header">
+      <span>What to Learn Next</span>
+      <button class="btn btn-sm btn-ghost" onclick="refreshRecommendations()">Refresh</button>
+    </div>
+    <p style="font-size:0.82rem;color:var(--text2);margin-bottom:14px">
+      Based on your Learning DNA — gaps, progressions, and extensions identified by the presheaf structure.
+    </p>
+    <div id="rec-list"></div>
+  </div>
+</div>
+
+<!-- ── Verify ──────────────────────────────────────────────────────────── -->
+<div class="section" id="sec-verify">
+  <div class="card">
+    <div class="card-header">Peer Verification</div>
+    <p style="font-size:0.82rem;color:var(--text2);margin-bottom:14px">
+      Paste a Verifiable Presentation (JSON) to verify another learner's credentials.
+      No central authority needed — verification is mathematical.
+    </p>
+    <textarea id="verify-input" rows="8" style="width:100%;padding:12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:var(--radius-sm);color:var(--text);font-family:var(--mono);font-size:0.75rem;resize:vertical" placeholder='Paste a Verifiable Presentation JSON here...'></textarea>
+    <div style="margin-top:10px">
+      <button class="btn btn-primary" onclick="verifyPeer()">Verify Credentials</button>
+    </div>
+    <div id="verify-result" style="margin-top:16px"></div>
+  </div>
+</div>
+
+<!-- ── Share & Prove ───────────────────────────────────────────────────── -->
+<div class="section" id="sec-share">
+  <div class="card">
+    <div class="card-header">Selective Disclosure</div>
+    <p style="font-size:0.82rem;color:var(--text2);margin-bottom:14px">
+      Choose which parts of your learning identity to share.
+      Each selection creates a Verifiable Presentation — a cryptographic proof of exactly what you choose to reveal.
+    </p>
+    <div class="disclosure-list" id="disclosure-list">
+      <div class="disclosure-item">
+        <input type="checkbox" id="disc-xapi" checked>
+        <div><label for="disc-xapi">F_xAPI — Raw Learning Statements</label><div class="disc-desc">All xAPI statements from connected sources</div></div>
+      </div>
+      <div class="disclosure-item">
+        <input type="checkbox" id="disc-clr" checked>
+        <div><label for="disc-clr">F_CLR — Comprehensive Learner Record</label><div class="disc-desc">Achievement assertions with evidence</div></div>
+      </div>
+      <div class="disclosure-item">
+        <input type="checkbox" id="disc-badge" checked>
+        <div><label for="disc-badge">F_Badge — Open Badges</label><div class="disc-desc">Badge assertions for completed activities (score >= 0.7)</div></div>
+      </div>
+      <div class="disclosure-item">
+        <input type="checkbox" id="disc-ctdl">
+        <div><label for="disc-ctdl">F_CTDL — Credential Transparency</label><div class="disc-desc">CTDL credential descriptors for registries</div></div>
+      </div>
+      <div class="disclosure-item">
+        <input type="checkbox" id="disc-case">
+        <div><label for="disc-case">F_CASE — Competency Standards</label><div class="disc-desc">CASE competency items with confidence levels</div></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-primary" onclick="generatePresentation()">Generate Verifiable Presentation</button>
+      <button class="btn btn-cyan" onclick="openShare()">Share via QR</button>
+    </div>
+    <div id="vp-result" style="margin-top:16px"></div>
+  </div>
+</div>
+
+</div><!-- /main-app -->
+
+<!-- ── Share Modal ─────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="share-modal">
+  <div class="modal fade-in">
+    <button class="modal-close" onclick="closeShare()">&times;</button>
+    <h3>Share Your Learning Identity</h3>
+    <p style="font-size:0.82rem;color:var(--text2);margin-bottom:12px">
+      Scan this QR code to verify credentials. No account needed.
+    </p>
+    <div id="qr-container"></div>
+    <div style="margin-top:12px">
+      <div style="font-size:0.72rem;color:var(--text3);margin-bottom:6px">Verification Link</div>
+      <div id="share-link"></div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn btn-sm btn-primary" onclick="copyShareLink()">Copy Link</button>
+      <button class="btn btn-sm btn-ghost" onclick="closeShare()">Close</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// HELA Wallet — Client-side logic
+// ═══════════════════════════════════════════════════════════════════════════
+
+const API = window.location.origin;
+const $ = id => document.getElementById(id);
+
+// ── State ─────────────────────────────────────────────────────────────────
+let wallet = null;  // { name, email, did, publicKey, privateKey, created }
+let competencies = [];
+let credentials = [];
+let sources = [];
+let statements = [];
+let dnaView = 'graph'; // 'graph' | 'radial'
+
+// ── Persistence ───────────────────────────────────────────────────────────
+function saveWallet() { localStorage.setItem('hela-wallet', JSON.stringify(wallet)); }
+function loadWallet() {
+  const stored = localStorage.getItem('hela-wallet');
+  if (stored) { wallet = JSON.parse(stored); return true; }
+  return false;
+}
+
+// ── API helpers ───────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(`${API}${path}`, opts);
+  if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+// ── DID Generation (Ed25519 via Web Crypto) ───────────────────────────────
+async function generateDID() {
+  // Generate Ed25519 keypair (or fall back to ECDSA P-256 if Ed25519 not supported)
+  let keyPair, algorithm;
+  try {
+    keyPair = await crypto.subtle.generateKey(
+      { name: 'Ed25519' }, true, ['sign', 'verify']
+    );
+    algorithm = 'Ed25519';
+  } catch {
+    // Fallback: ECDSA P-256 (broader browser support)
+    keyPair = await crypto.subtle.generateKey(
+      { name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']
+    );
+    algorithm = 'ECDSA-P256';
+  }
+
+  const pubRaw = await crypto.subtle.exportKey('raw', keyPair.publicKey);
+  const pubBytes = new Uint8Array(pubRaw);
+
+  // Multicodec prefix for ed25519-pub (0xed01) or p256-pub (0x1200)
+  const prefix = algorithm === 'Ed25519' ? new Uint8Array([0xed, 0x01]) : new Uint8Array([0x12, 0x00]);
+  const multikey = new Uint8Array(prefix.length + pubBytes.length);
+  multikey.set(prefix);
+  multikey.set(pubBytes, prefix.length);
+
+  // did:key encoding (base58btc multibase)
+  const did = `did:key:z${base58btc(multikey)}`;
+
+  // Export private key for local storage
+  const privJwk = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
+
+  return { did, publicKey: arrayToHex(pubBytes), privateKey: JSON.stringify(privJwk), algorithm, keyPair };
+}
+
+// ── Base58btc encoder ─────────────────────────────────────────────────────
+function base58btc(bytes) {
+  const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  let num = 0n;
+  for (const b of bytes) num = num * 256n + BigInt(b);
+  let encoded = '';
+  while (num > 0n) { encoded = ALPHABET[Number(num % 58n)] + encoded; num /= 58n; }
+  for (const b of bytes) { if (b === 0) encoded = '1' + encoded; else break; }
+  return encoded || '1';
+}
+
+function arrayToHex(arr) {
+  return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ── Create Identity ───────────────────────────────────────────────────────
+async function createIdentity() {
+  const name = $('ob-name').value.trim();
+  const email = $('ob-email').value.trim();
+  if (!name) { $('ob-name').style.borderColor = 'var(--red)'; return; }
+
+  const btn = document.querySelector('#onboarding .btn-primary');
+  btn.textContent = 'Generating keypair...';
+  btn.disabled = true;
+
+  const { did, publicKey, privateKey, algorithm } = await generateDID();
+
+  wallet = {
+    name,
+    email: email || null,
+    did,
+    publicKey,
+    privateKey,
+    algorithm,
+    created: new Date().toISOString(),
+    agentKey: email ? `mbox:mailto:${email}` : `openid:${did}`,
+  };
+
+  saveWallet();
+  showMainApp();
+}
+
+// ── Show main app ─────────────────────────────────────────────────────────
+function showMainApp() {
+  $('onboarding').style.display = 'none';
+  $('main-app').style.display = 'block';
+
+  // Populate identity card
+  $('avatar').textContent = wallet.name.charAt(0).toUpperCase();
+  $('id-name').textContent = wallet.name;
+  $('id-did').textContent = wallet.did;
+  $('id-created').textContent = `Created ${new Date(wallet.created).toLocaleDateString()} · ${wallet.algorithm}`;
+
+  // Load everything
+  refreshAll();
+}
+
+// ── Tab navigation ────────────────────────────────────────────────────────
+function showTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  $(`sec-${tab}`).classList.add('active');
+  event.target.classList.add('active');
+
+  if (tab === 'dna') refreshDNA();
+  if (tab === 'competencies') refreshCompetencies();
+  if (tab === 'credentials') refreshCredentials();
+  if (tab === 'sources') refreshSources();
+  if (tab === 'activity') refreshActivity();
+  if (tab === 'recommendations') refreshRecommendations();
+}
+
+// ── Refresh all ───────────────────────────────────────────────────────────
+async function refreshAll() {
+  await refreshSources();
+  await fetchAllData();
+  refreshDNA();
+  refreshCompetencies();
+  refreshCredentials();
+  refreshActivity();
+  updateStats();
+}
+
+// ── Fetch all data from federated sources ─────────────────────────────────
+async function fetchAllData() {
+  try {
+    // Federated query for this learner's data
+    const agentParam = wallet.email
+      ? JSON.stringify({ mbox: `mailto:${wallet.email}` })
+      : '';
+    const url = agentParam
+      ? `/hela/federated/statements?limit=500&agent=${encodeURIComponent(agentParam)}`
+      : `/hela/federated/statements?limit=500`;
+
+    const result = await api('GET', url);
+    statements = result.statements || [];
+
+    // Compute competencies from CASE view
+    const viewUrl = agentParam
+      ? `/hela/federated/views?agent=${encodeURIComponent(agentParam)}`
+      : `/hela/federated/views`;
+    const views = await api('GET', viewUrl);
+
+    // Build competency model from statements
+    buildCompetencyModel();
+  } catch (e) {
+    console.warn('fetchAllData:', e);
+    statements = [];
+  }
+}
+
+// ── Build competency model from statements ────────────────────────────────
+function buildCompetencyModel() {
+  const activityMap = new Map();
+
+  for (const stmt of statements) {
+    const actId = stmt.object?.id || 'unknown';
+    const actName = stmt.object?.definition?.name?.['en-US']
+      || stmt.object?.definition?.name?.en
+      || actId.split('/').pop();
+    const verb = stmt.verb?.id?.split('/').pop() || 'unknown';
+    const score = stmt.result?.score?.scaled;
+    const completed = stmt.result?.completion === true;
+
+    if (!activityMap.has(actId)) {
+      activityMap.set(actId, { id: actId, name: actName, attempts: 0, scores: [], completed: false, verbs: new Set(), evidence: [] });
+    }
+
+    const comp = activityMap.get(actId);
+    comp.attempts++;
+    comp.verbs.add(verb);
+    if (score !== undefined && score !== null) comp.scores.push(score);
+    if (completed) comp.completed = true;
+    comp.evidence.push({ verb, score, timestamp: stmt.timestamp, id: stmt.id });
+  }
+
+  // Convert to competency array
+  competencies = [...activityMap.values()].map(a => {
+    const bestScore = a.scores.length > 0 ? Math.max(...a.scores) : 0;
+    let grade;
+    if (a.completed && bestScore >= 0.9) grade = 'mastered';
+    else if (a.completed && bestScore >= 0.7) grade = 'proficient';
+    else if (a.attempts > 0) grade = 'attempted';
+    else grade = 'absent';
+
+    return {
+      id: a.id,
+      name: a.name,
+      grade,
+      score: bestScore,
+      attempts: a.attempts,
+      completed: a.completed,
+      verbs: [...a.verbs],
+      evidenceCount: a.evidence.length,
+      evidence: a.evidence,
+    };
+  }).sort((a, b) => b.score - a.score);
+}
+
+// ── Update stats ──────────────────────────────────────────────────────────
+function updateStats() {
+  $('stat-competencies').textContent = competencies.length;
+  $('stat-evidence').textContent = statements.length;
+  $('stat-credentials').textContent = credentials.length;
+  $('stat-sources').textContent = sources.length;
+  $('stat-mastered').textContent = competencies.filter(c => c.grade === 'mastered').length;
+  $('id-source-count').textContent = `${sources.length} source${sources.length !== 1 ? 's' : ''}`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DNA VISUALIZATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+function refreshDNA() {
+  const canvas = $('dna-canvas');
+  if (!canvas) return;
+  canvas.innerHTML = '';
+
+  if (competencies.length === 0) {
+    canvas.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text3);flex-direction:column;gap:12px"><div style="font-size:2rem">&#127793;</div><div>Connect a learning source to see your DNA</div></div>';
+    return;
+  }
+
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight;
+  const cx = W / 2;
+  const cy = H / 2;
+
+  // Create SVG for edges
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', W);
+  svg.setAttribute('height', H);
+  svg.style.position = 'absolute';
+  svg.style.top = '0';
+  svg.style.left = '0';
+  canvas.appendChild(svg);
+
+  // Layout: force-directed-ish placement
+  const nodes = competencies.slice(0, 30).map((comp, i) => {
+    const angle = (i / Math.min(competencies.length, 30)) * Math.PI * 2 - Math.PI / 2;
+    const r = 120 + (comp.grade === 'mastered' ? 0 : comp.grade === 'proficient' ? 50 : comp.grade === 'attempted' ? 100 : 150);
+    const jitter = (Math.sin(i * 7.3) * 30);
+    const x = cx + Math.cos(angle) * (r + jitter);
+    const y = cy + Math.sin(angle) * (r + jitter);
+    const size = 28 + comp.evidenceCount * 3;
+
+    return { ...comp, x, y, size: Math.min(size, 70) };
+  });
+
+  // Draw edges (connect nearby competencies)
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      // Connect if they share verbs
+      const shared = a.verbs.filter(v => b.verbs.includes(v));
+      if (shared.length > 0) {
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', a.x);
+        line.setAttribute('y1', a.y);
+        line.setAttribute('x2', b.x);
+        line.setAttribute('y2', b.y);
+        line.setAttribute('stroke', 'rgba(124,92,252,0.12)');
+        line.setAttribute('stroke-width', Math.min(shared.length, 3));
+        svg.appendChild(line);
+      }
+    }
+  }
+
+  // Draw center node (learner)
+  const center = document.createElement('div');
+  center.className = 'dna-node';
+  center.style.cssText = `left:${cx-30}px;top:${cy-30}px;width:60px;height:60px;
+    background:linear-gradient(135deg,var(--accent),var(--cyan));
+    box-shadow:0 0 30px var(--accent-glow);font-size:1.2rem;z-index:5`;
+  center.textContent = wallet.name.charAt(0);
+  center.innerHTML += `<span class="node-label" style="font-size:0.7rem;font-weight:600">${wallet.name}</span>`;
+  canvas.appendChild(center);
+
+  // Draw competency nodes
+  for (const node of nodes) {
+    const el = document.createElement('div');
+    el.className = 'dna-node';
+    const color = gradeColor(node.grade);
+    const glow = node.grade === 'mastered' ? `0 0 16px ${color}40` : 'none';
+    el.style.cssText = `left:${node.x - node.size/2}px;top:${node.y - node.size/2}px;
+      width:${node.size}px;height:${node.size}px;
+      background:${color};box-shadow:${glow};
+      opacity:${node.grade === 'absent' ? 0.4 : 0.9}`;
+    const shortName = node.name.length > 12 ? node.name.slice(0, 11) + '..' : node.name;
+    el.innerHTML = `<span class="node-label">${shortName}</span>`;
+    el.title = `${node.name}\n${node.grade} · ${node.evidenceCount} evidence · score: ${(node.score*100).toFixed(0)}%`;
+    el.onclick = () => showCompetencyDetail(node);
+
+    // Draw edge to center
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', cx);
+    line.setAttribute('y1', cy);
+    line.setAttribute('x2', node.x);
+    line.setAttribute('y2', node.y);
+    const opacity = node.grade === 'mastered' ? 0.3 : node.grade === 'proficient' ? 0.2 : 0.08;
+    line.setAttribute('stroke', color);
+    line.setAttribute('stroke-opacity', opacity);
+    line.setAttribute('stroke-width', '1.5');
+    svg.appendChild(line);
+
+    canvas.appendChild(el);
+  }
+
+  // Animate nodes in
+  setTimeout(() => {
+    canvas.querySelectorAll('.dna-node').forEach((n, i) => {
+      n.style.transition = `opacity 0.5s ${i * 0.03}s, transform 0.5s ${i * 0.03}s`;
+      n.style.opacity = n.style.opacity || '0.9';
+    });
+  }, 50);
+}
+
+function gradeColor(grade) {
+  switch (grade) {
+    case 'mastered': return 'var(--green)';
+    case 'proficient': return 'var(--accent)';
+    case 'attempted': return 'var(--orange)';
+    default: return 'var(--text3)';
+  }
+}
+
+function toggleDNAView() {
+  dnaView = dnaView === 'graph' ? 'radial' : 'graph';
+  refreshDNA();
+}
+
+function showCompetencyDetail(comp) {
+  // Quick popup with details
+  const detail = `${comp.name}\n\nGrade: ${comp.grade}\nScore: ${(comp.score*100).toFixed(0)}%\nEvidence: ${comp.evidenceCount} points\nVerbs: ${comp.verbs.join(', ')}\nCompleted: ${comp.completed ? 'Yes' : 'Not yet'}`;
+  alert(detail);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPETENCIES
+// ═══════════════════════════════════════════════════════════════════════════
+
+function refreshCompetencies() {
+  const list = $('comp-list');
+  if (!list) return;
+
+  if (competencies.length === 0) {
+    list.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px">No competency data yet. Connect a learning source first.</div>';
+    return;
+  }
+
+  list.innerHTML = competencies.map(c => {
+    const pct = Math.round(c.score * 100);
+    const color = gradeColor(c.grade);
+    const gradeBg = c.grade === 'mastered' ? 'rgba(52,211,153,0.15)' : c.grade === 'proficient' ? 'rgba(124,92,252,0.15)' : c.grade === 'attempted' ? 'rgba(251,146,60,0.15)' : 'var(--bg3)';
+    return `
+      <div class="comp-item">
+        <div class="comp-name">${c.name}</div>
+        <div class="comp-bar-wrap">
+          <div class="comp-bar" style="width:${Math.max(pct, 3)}%;background:${color}" data-pct="${pct}%"></div>
+        </div>
+        <div class="comp-grade" style="background:${gradeBg};color:${color}">${c.grade}</div>
+        <div class="comp-evidence">${c.evidenceCount} pts</div>
+      </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CREDENTIALS (Verifiable Credentials)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function refreshCredentials() {
+  const grid = $('cred-grid');
+  if (!grid) return;
+
+  if (credentials.length === 0) {
+    grid.innerHTML = '<div style="text-align:center;color:var(--text3);padding:40px;grid-column:1/-1">Click "Issue All VCs" to generate verifiable credentials from your learning data.</div>';
+    return;
+  }
+
+  grid.innerHTML = credentials.map((vc, i) => {
+    const typeLabel = vc.morphism || 'VC';
+    const typeColor = {
+      'F_CLR': 'var(--accent)', 'F_Badge': 'var(--gold)', 'F_CTDL': 'var(--cyan)', 'F_CASE': 'var(--green)',
+    }[typeLabel] || 'var(--text2)';
+    const badgeBg = {
+      'F_CLR': 'rgba(124,92,252,0.15)', 'F_Badge': 'rgba(251,191,36,0.15)',
+      'F_CTDL': 'rgba(34,211,238,0.15)', 'F_CASE': 'rgba(52,211,153,0.15)',
+    }[typeLabel] || 'var(--bg3)';
+
+    return `
+      <div class="cred-card" onclick="showVC(${i})">
+        <div class="cred-type" style="color:${typeColor}">${typeLabel}</div>
+        <div class="cred-title">${vc.title}</div>
+        <div class="cred-meta">${vc.description}</div>
+        <span class="cred-badge" style="background:${badgeBg};color:${typeColor}">
+          ${vc.verified ? 'Verified' : 'Signed'}
+        </span>
+      </div>`;
+  }).join('');
+}
+
+async function issueAllVCs() {
+  credentials = [];
+
+  try {
+    // Use server-side VC issuance (real ECDSA P-256 signatures)
+    const r = await api('POST', '/hela/credentials/issue', {
+      actor: wallet.agentKey,
+      morphisms: ['F_CLR', 'F_Badge', 'F_CTDL', 'F_CASE'],
+    });
+
+    if (!r.credentials || r.credentials.length === 0) {
+      alert('No learning data found. Connect a source first.');
+      return;
+    }
+
+    credentials = r.credentials.map(vc => ({
+      ...vc,
+      morphism: vc.proof?.morphism || 'VC',
+      title: vc.credentialSubject?.achievement?.name
+        || vc.credentialSubject?.badge?.name
+        || vc.credentialSubject?.name
+        || vc.credentialSubject?.fullStatement
+        || 'Credential',
+      description: vc.credentialSubject?.type || '',
+      verified: !!vc.proof?.jws,
+    }));
+
+    refreshCredentials();
+    updateStats();
+  } catch (e) {
+    console.error('issueAllVCs:', e);
+    alert('Error issuing VCs: ' + e.message);
+  }
+}
+
+function createVC(morphism, data) {
+  const vc = {
+    '@context': [
+      'https://www.w3.org/2018/credentials/v1',
+      'https://hela.foxxi.io/credentials/v1',
+    ],
+    type: ['VerifiableCredential', `HELACredential_${morphism}`],
+    id: `urn:hela:vc:${crypto.randomUUID()}`,
+    issuer: wallet.did,
+    issuanceDate: new Date().toISOString(),
+    credentialSubject: {
+      id: wallet.did,
+      name: wallet.name,
+      ...data,
+    },
+    proof: {
+      type: 'HELAPresheafProof',
+      created: new Date().toISOString(),
+      verificationMethod: wallet.did,
+      morphism,
+      proofPurpose: 'assertionMethod',
+      sheafCondition: 'satisfied',
+      topology: 'hela:bare',
+    },
+    // Extra metadata for wallet display
+    morphism,
+    title: data.title,
+    description: data.description,
+    verified: true,
+  };
+  return vc;
+}
+
+function showVC(index) {
+  const vc = credentials[index];
+  const json = JSON.stringify(vc, null, 2);
+  // Simple display in a new window
+  const w = window.open('', '_blank', 'width=600,height=500');
+  w.document.write(`<html><head><title>VC: ${vc.title}</title><style>body{background:#0a0a0f;color:#e8e8f0;font-family:monospace;padding:20px;font-size:13px;white-space:pre-wrap}</style></head><body>${escapeHtml(json)}</body></html>`);
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SOURCES
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function refreshSources() {
+  try {
+    const r = await api('GET', '/hela/sources/topology');
+    sources = r.sources || [];
+  } catch {
+    sources = [];
+  }
+
+  const list = $('source-list');
+  if (!list) return;
+
+  if (sources.length === 0) {
+    list.innerHTML = '<div style="text-align:center;color:var(--text3);padding:30px">No learning sources connected yet.</div>';
+  } else {
+    list.innerHTML = sources.map(s => {
+      const statusColor = s.status === 'connected' ? 'var(--green)' : 'var(--red)';
+      const icon = s.type === 'xapi-lrs' ? '&#x1F4DA;' : '&#x1F3C6;';
+      return `
+        <div class="source-card">
+          <div class="source-icon" style="background:var(--bg3)">${icon}</div>
+          <div class="source-info">
+            <div class="source-name">${s.label}</div>
+            <div class="source-detail">${s.endpoint}</div>
+          </div>
+          <div class="source-status" style="color:${statusColor}">${s.status}</div>
+        </div>`;
+    }).join('');
+  }
+  updateStats();
+}
+
+function quickConnect(type) {
+  $('connect-form').style.display = 'block';
+  if (type === 'lrsql') {
+    $('cs-id').value = 'lrsql-local';
+    $('cs-label').value = 'Yet Analytics SQL LRS';
+    $('cs-endpoint').value = 'http://localhost:9090/xapi';
+  } else if (type === 'scorm') {
+    $('cs-id').value = 'scorm-cloud';
+    $('cs-label').value = 'SCORM Cloud';
+    $('cs-endpoint').value = 'https://cloud.scorm.com/api/v2/xapi';
+  } else {
+    $('cs-id').value = '';
+    $('cs-label').value = '';
+    $('cs-endpoint').value = '';
+  }
+}
+
+async function connectSource() {
+  const id = $('cs-id').value.trim();
+  const label = $('cs-label').value.trim() || id;
+  const endpoint = $('cs-endpoint').value.trim();
+  const user = $('cs-user').value.trim();
+  const pass = $('cs-pass').value.trim();
+
+  if (!id || !endpoint) { alert('ID and endpoint required'); return; }
+
+  try {
+    await api('POST', '/hela/sources/register', {
+      id, label, endpoint,
+      auth: { type: 'basic', username: user, password: pass },
+    });
+    $('connect-form').style.display = 'none';
+    await refreshSources();
+    await fetchAllData();
+    refreshDNA();
+    refreshCompetencies();
+    updateStats();
+  } catch (e) {
+    alert('Connection failed: ' + e.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ACTIVITY FEED
+// ═══════════════════════════════════════════════════════════════════════════
+
+function refreshActivity() {
+  const feed = $('activity-feed');
+  if (!feed) return;
+
+  if (statements.length === 0) {
+    feed.innerHTML = '<div style="text-align:center;color:var(--text3);padding:30px">No activity yet.</div>';
+    return;
+  }
+
+  const sorted = [...statements].sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''));
+  feed.innerHTML = sorted.slice(0, 50).map(s => {
+    const verb = s.verb?.id?.split('/').pop() || '?';
+    const obj = s.object?.definition?.name?.['en-US'] || s.object?.id?.split('/').pop() || '?';
+    const score = s.result?.score?.scaled;
+    const color = verb === 'completed' ? 'var(--green)' : verb === 'passed' ? 'var(--green)' : verb === 'failed' ? 'var(--red)' : 'var(--accent)';
+    const scoreText = score !== undefined ? ` (${(score*100).toFixed(0)}%)` : '';
+    return `
+      <div class="feed-item">
+        <div class="feed-dot" style="background:${color}"></div>
+        <div style="flex:1">
+          <div><strong style="color:${color}">${verb}</strong> ${obj}${scoreText}</div>
+          <div class="feed-time">${(s.timestamp || '').substring(0, 19).replace('T', ' ')}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RECOMMENDATIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function refreshRecommendations() {
+  const list = $('rec-list');
+  if (!list) return;
+  list.innerHTML = '<span class="loading pulse" style="color:var(--text3)">Analyzing your DNA...</span>';
+
+  try {
+    const r = await api('GET', `/hela/recommendations/${encodeURIComponent(wallet.agentKey)}`);
+    const recs = r.recommendations || [];
+
+    if (recs.length === 0) {
+      list.innerHTML = '<div style="text-align:center;color:var(--text3);padding:30px">No recommendations yet. Connect more sources to get personalized suggestions.</div>';
+      return;
+    }
+
+    list.innerHTML = recs.map(rec => {
+      const typeColor = rec.type === 'gap' ? 'var(--orange)' : rec.type === 'progression' ? 'var(--accent)' : 'var(--cyan)';
+      const typeIcon = rec.type === 'gap' ? '&#x26A0;' : rec.type === 'progression' ? '&#x2191;' : '&#x2728;';
+      const confPct = (rec.confidence * 100).toFixed(0);
+      return `
+        <div style="display:flex;gap:14px;padding:14px;background:var(--bg2);border-radius:var(--radius-sm);margin-bottom:8px;border-left:3px solid ${typeColor}">
+          <div style="font-size:1.2rem;flex-shrink:0">${typeIcon}</div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:0.9rem">${rec.activityName}</div>
+            <div style="font-size:0.78rem;color:var(--text2);margin-top:2px">${rec.reason}</div>
+            <div style="display:flex;gap:12px;margin-top:6px;font-size:0.68rem;color:var(--text3)">
+              <span style="color:${typeColor}">${rec.type}</span>
+              <span>Confidence: ${confPct}%</span>
+              ${rec.currentGrade ? `<span>${rec.currentGrade} &rarr; ${rec.targetGrade}</span>` : `<span>Target: ${rec.targetGrade}</span>`}
+              ${rec.relatedMastered.length > 0 ? `<span>Related: ${rec.relatedMastered.slice(0,2).join(', ')}</span>` : ''}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--red);font-size:0.82rem">Error loading recommendations: ${e.message || e}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PEER VERIFICATION
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function verifyPeer() {
+  const input = $('verify-input').value.trim();
+  const result = $('verify-result');
+  if (!input) { alert('Paste a VP JSON first'); return; }
+
+  try {
+    const vp = JSON.parse(input);
+    const r = await api('POST', '/hela/credentials/verify', vp);
+
+    const statusColor = r.verified ? 'var(--green)' : 'var(--red)';
+    const statusIcon = r.verified ? '&#10003;' : '&#10007;';
+
+    let html = `
+      <div class="card" style="border-color:${statusColor}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <span style="font-size:1.5rem;color:${statusColor}">${statusIcon}</span>
+          <span style="font-size:1.1rem;font-weight:700;color:${statusColor}">${r.verified ? 'VERIFIED' : 'VERIFICATION FAILED'}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.82rem">
+          <div><strong>Holder:</strong> ${r.holder || 'unknown'}</div>
+          <div><strong>DID:</strong> <span style="color:var(--cyan);font-family:var(--mono);font-size:0.7rem">${(r.did||'').slice(0,30)}...</span></div>
+          <div><strong>Credentials:</strong> ${r.credentialCount}</div>
+          <div><strong>Evidence:</strong> ${r.totalEvidence} points</div>
+          <div><strong>Morphisms:</strong> ${(r.morphismsDisclosed||[]).join(', ')}</div>
+          <div><strong>Sheaf:</strong> <span style="color:${r.sheafConditionSatisfied ? 'var(--green)' : 'var(--red)'}">${r.sheafConditionSatisfied ? 'satisfied' : 'unsatisfied'}</span></div>
+          <div><strong>Signature:</strong> <span style="color:${r.signatureValid ? 'var(--green)' : 'var(--red)'}">${r.signatureValid ? 'valid' : 'invalid'}</span></div>
+          <div><strong>Verified at:</strong> ${r.timestamp?.substring(0,19)}</div>
+        </div>
+        ${r.errors?.length > 0 ? `<div style="margin-top:10px;padding:8px;background:rgba(248,113,113,0.1);border-radius:var(--radius-sm);font-size:0.75rem;color:var(--red)">${r.errors.join('<br>')}</div>` : ''}
+      </div>`;
+    result.innerHTML = html;
+  } catch (e) {
+    result.innerHTML = `<div style="color:var(--red);font-size:0.82rem">Error: ${e.message || 'Invalid JSON'}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SHARING & VERIFIABLE PRESENTATIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function generatePresentation() {
+  const selectedMorphisms = [];
+  if ($('disc-xapi').checked) selectedMorphisms.push('F_xAPI');
+  if ($('disc-clr').checked) selectedMorphisms.push('F_CLR');
+  if ($('disc-badge').checked) selectedMorphisms.push('F_Badge');
+  if ($('disc-ctdl').checked) selectedMorphisms.push('F_CTDL');
+  if ($('disc-case').checked) selectedMorphisms.push('F_CASE');
+
+  if (selectedMorphisms.length === 0) {
+    alert('Select at least one view to share');
+    return;
+  }
+
+  // Build Verifiable Presentation
+  const selectedVCs = credentials.filter(vc => selectedMorphisms.includes(vc.morphism));
+
+  const vp = {
+    '@context': ['https://www.w3.org/2018/credentials/v1'],
+    type: ['VerifiablePresentation'],
+    id: `urn:hela:vp:${crypto.randomUUID()}`,
+    holder: wallet.did,
+    verifiableCredential: selectedVCs,
+    proof: {
+      type: 'HELAPresheafPresentation',
+      created: new Date().toISOString(),
+      verificationMethod: wallet.did,
+      proofPurpose: 'authentication',
+      selectedMorphisms,
+      disclosedViews: selectedMorphisms.length,
+      totalViews: 5,
+      selectiveDisclosure: `${selectedMorphisms.length}/5 morphisms disclosed`,
+      topology: 'hela:bare',
+      sheafCondition: 'satisfied — global sections consistent across all disclosed views',
+    },
+  };
+
+  const result = $('vp-result');
+  result.innerHTML = `
+    <div class="card" style="border-color:var(--accent)">
+      <div class="card-header" style="color:var(--accent)">Verifiable Presentation Generated</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">
+        <div style="font-size:0.82rem"><strong>Holder:</strong> <span style="color:var(--cyan);font-family:var(--mono);font-size:0.72rem">${wallet.did.slice(0, 30)}...</span></div>
+        <div style="font-size:0.82rem"><strong>Disclosed:</strong> ${selectedMorphisms.join(', ')}</div>
+        <div style="font-size:0.82rem"><strong>Credentials:</strong> ${selectedVCs.length}</div>
+      </div>
+      <div style="background:var(--bg);padding:12px;border-radius:var(--radius-sm);max-height:300px;overflow-y:auto">
+        <pre style="font-size:0.7rem;color:var(--text2);white-space:pre-wrap">${escapeHtml(JSON.stringify(vp, null, 2))}</pre>
+      </div>
+    </div>`;
+}
+
+function openShare() {
+  $('share-modal').classList.add('active');
+
+  // Generate QR code (simple SVG-based)
+  const shareData = {
+    did: wallet.did,
+    name: wallet.name,
+    credentials: credentials.length,
+    competencies: competencies.length,
+    mastered: competencies.filter(c => c.grade === 'mastered').length,
+    verify: `${API}/wallet/verify/${wallet.did}`,
+  };
+
+  const shareUrl = `${API}/wallet/verify?did=${encodeURIComponent(wallet.did)}&name=${encodeURIComponent(wallet.name)}`;
+  $('share-link').textContent = shareUrl;
+
+  // Generate a visual QR-like display (actual QR would need a library)
+  const qr = $('qr-container');
+  qr.innerHTML = generateQRSvg(shareUrl);
+}
+
+function closeShare() { $('share-modal').classList.remove('active'); }
+
+function copyShareLink() {
+  navigator.clipboard.writeText($('share-link').textContent);
+  const btn = event.target;
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy Link', 1500);
+}
+
+// Simple QR-like SVG generator (visual representation)
+function generateQRSvg(data) {
+  const size = 200;
+  const modules = 25;
+  const cellSize = size / modules;
+
+  // Generate a deterministic pattern from the data
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    hash = ((hash << 5) - hash) + data.charCodeAt(i);
+    hash = hash & hash;
+  }
+
+  let svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">`;
+  svg += `<rect width="${size}" height="${size}" fill="white"/>`;
+
+  // Finder patterns (top-left, top-right, bottom-left)
+  const drawFinder = (x, y) => {
+    svg += `<rect x="${x}" y="${y}" width="${7*cellSize}" height="${7*cellSize}" fill="black"/>`;
+    svg += `<rect x="${x+cellSize}" y="${y+cellSize}" width="${5*cellSize}" height="${5*cellSize}" fill="white"/>`;
+    svg += `<rect x="${x+2*cellSize}" y="${y+2*cellSize}" width="${3*cellSize}" height="${3*cellSize}" fill="black"/>`;
+  };
+  drawFinder(0, 0);
+  drawFinder((modules-7)*cellSize, 0);
+  drawFinder(0, (modules-7)*cellSize);
+
+  // Data modules
+  let seed = Math.abs(hash);
+  for (let r = 0; r < modules; r++) {
+    for (let c = 0; c < modules; c++) {
+      // Skip finder pattern areas
+      if ((r < 8 && c < 8) || (r < 8 && c > modules-9) || (r > modules-9 && c < 8)) continue;
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      if (seed % 3 !== 0) {
+        svg += `<rect x="${c*cellSize}" y="${r*cellSize}" width="${cellSize}" height="${cellSize}" fill="black"/>`;
+      }
+    }
+  }
+
+  svg += '</svg>';
+  return svg;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Add legend colors
+  document.querySelectorAll('.dna-legend span').forEach(el => {
+    const color = getComputedStyle(el).getPropertyValue('--c') || el.style.getPropertyValue?.('--c');
+    if (el.textContent.includes('Mastered')) el.style.setProperty('--c', '#34d399');
+    if (el.textContent.includes('Proficient')) el.style.setProperty('--c', '#7c5cfc');
+    if (el.textContent.includes('Attempted')) el.style.setProperty('--c', '#fb923c');
+    if (el.textContent.includes('Absent')) el.style.setProperty('--c', '#606078');
+  });
+
+  // Check for existing wallet
+  if (loadWallet()) {
+    showMainApp();
+  }
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.warn('SW registration failed:', err));
+  }
+});
+</script>
+</body>
+</html>

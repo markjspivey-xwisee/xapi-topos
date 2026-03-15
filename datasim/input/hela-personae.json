@@ -1,0 +1,24 @@
+{
+  "member": [
+    {
+      "name": "Mark Spivey",
+      "mbox": "mailto:mark@foxxi.io",
+      "objectType": "Agent",
+      "role": "Learner"
+    },
+    {
+      "name": "Jane Chen",
+      "mbox": "mailto:jane@foxxi.io",
+      "objectType": "Agent",
+      "role": "Learner"
+    },
+    {
+      "name": "Alex Rivera",
+      "mbox": "mailto:alex@foxxi.io",
+      "objectType": "Agent",
+      "role": "Learner"
+    }
+  ],
+  "objectType": "Group",
+  "name": "HELA Learners"
+}
