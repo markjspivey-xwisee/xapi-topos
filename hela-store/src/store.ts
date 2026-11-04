@@ -30,6 +30,12 @@ const PROV  = (s: string): IRI => IRI(`http://www.w3.org/ns/prov#${s}`);
 const XSD   = (s: string): IRI => IRI(`http://www.w3.org/2001/XMLSchema#${s}`);
 
 const XAPI_STATEMENT_TYPE = XAPI("Statement");
+// This node is the complete event record, not an arbitrary member of ADL's
+// broader Statement class (which also has part classes). Foxxi's independently
+// published 2026.10.1 Statement class is the exact event-record construct that
+// I2IDL-X's executable xapi-statement bridge consumes. Keep the existing ADL
+// property projection and sourceStmt provenance; assert no vocabulary equivalence.
+const FOXXI_STATEMENT_TYPE = IRI("https://foxxi-bridge.interego.xwisee.com/ns/xapi#Statement");
 const XAPI_ACTOR          = XAPI("actor");
 const XAPI_VERB           = XAPI("verb");
 const XAPI_OBJECT         = XAPI("object");
@@ -57,6 +63,7 @@ export function realize(stmt: StoredXAPIStatement, topology: string): Psi {
 
   // Core statement identity
   t(base, RDF_TYPE, XAPI_STATEMENT_TYPE);
+  t(base, RDF_TYPE, FOXXI_STATEMENT_TYPE);
   t(base, XAPI_STORED, Literal(`"${stmt.stored}"^^xsd:dateTime`));
 
   // Actor
