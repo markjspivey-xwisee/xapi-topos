@@ -1,0 +1,28 @@
+name: HELA store integration
+
+on:
+  push:
+    branches: [master]
+    paths: ['hela-store/**', '.github/workflows/hela-store.yml']
+  pull_request:
+    paths: ['hela-store/**', '.github/workflows/hela-store.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: hela-store
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: hela-store/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm test
